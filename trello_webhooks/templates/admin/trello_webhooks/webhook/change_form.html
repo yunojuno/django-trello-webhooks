@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+{% load trello_webhook_tags %}
+{% block extrahead %}{{ block.super }}<!-- custom trello api code snippet -->
+<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script src="https://api.trello.com/1/client.js?key={% trello_api_key %}"></script>
+<script>
+var getTrelloToken = function(){
+    Trello.authorize({
+        type: "popup",
+        success: function() {
+            $("#id_auth_token").val(Trello.token());
+        }
+    });
+}
+</script>
+{% endblock %}
