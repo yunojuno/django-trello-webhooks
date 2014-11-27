@@ -91,9 +91,9 @@ class WebhookAdmin(admin.ModelAdmin):
 
     inlines = [CallbackEventInline]
     list_display = (
-        'trello_model_id',
-        'auth_token',
         'description',
+        'trello_model_id',
+        'has_trello_id',
         'created_at',
         'last_updated_at',
     )

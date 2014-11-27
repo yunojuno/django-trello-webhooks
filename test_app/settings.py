@@ -1,5 +1,5 @@
-
-from os import environ
+# -*- coding: utf-8 -*-
+from os import environ, path
 
 import dj_database_url
 
@@ -36,9 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_coverage',
     'trello_webhooks',
-    'test_app',
 )
 
 MIDDLEWARE_CLASSES = [
@@ -149,5 +147,7 @@ COVERAGE_USE_STDOUT = True
 
 APPEND_SLASH = True
 
-TIMEZONE = 'Europe/London'
+USE_L10N = True
+USE_I18N = True
 USE_TZ = True
+TIMEZONE = 'Europe/London'

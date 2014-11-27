@@ -97,7 +97,8 @@ class Webhook(models.Model):
         with Trello, unless the 'sync' kwarg is passed in and False.
 
         """
-        if self.id is None and kwargs.pop('sync', True):
+        sync = kwargs.pop('sync', True)
+        if self.id is None and sync is True:
             logger.debug(u"New Webhook (%r) - syncing with Trello", self)
             self.sync(save=False)
         self.last_updated_at = timezone.now()
