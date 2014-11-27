@@ -137,10 +137,10 @@ MIT (see LICENCE file)
 Dependencies
 ------------
 
-The core Trello API integration is done using `py-trello <https://github.com/sarumont/py-trello>_
+The core Trello API integration is done using `py-trello <https://github.com/sarumont/py-trello>`_
 from Richard Kolkovich (@sarumont), so thanks to him for that. He naturally
 relies on `requests <http://docs.python-requests.org/en/latest/>`_ from Kenneth Reitz,
-as well as `request-oauthlib <https://requests-oauthlib.readthedocs.org/en/latest/>`, so
+as well as `request-oauthlib <https://requests-oauthlib.readthedocs.org/en/latest/>`_, so
 thanks to anyone involved with either of those.
 
 
@@ -149,10 +149,10 @@ Addenda
 
 The webhook API works on the concept of a Trello model id. This refers to the object
 being watched - and could be a Board, a List, a Card etc. Getting these ids is a bit
-of a pain, to put it mildly, so I would strongly recommend using the excellent Trello
-Explorer app from @hwartig (http://www.hwartig.com/trelloapiexplorer).
+of a pain, to put it mildly, so I would strongly recommend using the excellent
+`Trello Explorer <http://www.hwartig.com/trelloapiexplorer>`_ app from Harald Wartig (@hwartig).
 
-I would also recommend the use of ngrok (https://ngrok.com/) to expose your local
+I would also recommend the use of `ngrok <https://ngrok.com/>`_ to expose your local
 Django dev server during development.
 
 As for development itself - use virtualenv, install dependencies from requirements.txt
