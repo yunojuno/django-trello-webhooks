@@ -9,97 +9,115 @@ Background
 ----------
 
 `Trello webhooks <https://trello.com/docs/gettingstarted/webhooks.html>`_
-can only be managed programmatically via the API,
-which is clever, but also a massive PITA. In addition, whilst
-creating a new webhook, Trello will immediately call the registered
-callback URL with a HEAD request to verify that it exists. This makes
-setting up webhooks fiddly and complex (esp. when experimenting in
-a local development environment).
+can only be managed programmatically via the API, which is clever, but also
+a massive PITA. In addition, whilst creating a new webhook, Trello will
+immediately call the registered callback URL with a HEAD request to verify
+that it exists. This makes setting up webhooks fiddly and complex (esp. when
+experimenting in a local development environment).
 
-Proposed solution
+This project is a Django app that makes managing Trello webhook easy. Well,
+easier. It exposes Trello webhooks through the Django admin site as standard
+Django models that can be created and deleted through a web UI. Incoming
+webhook events are then exposed via Django signals that are raised, and
+can be integrated into your application.
+
+How does it work?
 -----------------
 
-This app adds Trello webhook management to a Django project.
-The proposal is that each webhook is modelled as a Django model,
-which would create the webhook on ``Webhook.save()``, and handle all of the
-callback processing without the user having to specify a URL. The
-creation process would therefore work like this:
+Each webhook is modelled as a Django model (``Webhook``), and each callback
+received on the webhook is modelled as a ``CallbackEvent`` object that
+contains the JSON payload (so it will maintain a complete history of all
+callbacks).
 
-1. Create new webhook in Django admin
-2. Django saves model to database (id is generated), marks as inactive
-3. Django calls Trello, supplying default callback (``/webhooks/<webhook_id>``)
-4. Trello calls Django on supplied callback URL (``/webhooks/<webhook_id>``)
-5. Django marks webhook as active, returns 200, Trello activates webhook
+The ``Webhook.save()`` method is used to register the webhook with the Trello
+API. The corresponding delete method is used to delete the webhook from Trello.
 
-The app itself would do nothing other than manage the Trello interaction,
-handle incoming webhook calls. It might log the number of webhook calls
-just for reference (num_callbacks, last_callback_at timestamp etc.)
+The app contains a single view function, ``api_callback``, which receives the
+callback from Trello, and which also supports the synchronous activation of
+new webhooks by Trello. (When you create a webhook via the Trello API, they
+will immediately issue a HEAD request to the callback url supplied, so you
+need to be able to handle this immediately.)
 
 The important bit is then how you use the callback in your application.
-This would be done via Django signals. On each webhook callback, the app
-will send the ``webhook_callback_received`` signal, passing in the data
-received via the callback, deserialized from the JSON into python objects
-(using `py-trello <https://github.com/sarumont/py-trello>`_ or equivalent).
+This is done via Django signals. On each webhook callback, the app sends the
+``callback_received`` signal, passing in the data received via the callback.
+
 Your application then connects via this signal:
 
 .. code:: python
 
     from django.dispatch import receiver
-    from trello_webhooks.signals import webhook_callback_received
+    
+    from trello_webhooks.signals import callback_received
+    
+    @receiver(callback_received, dispatch_uid="callback_received")
+    def on_callback_received(sender, **kwargs):
+        event = kwargs.pop('event')
+        print "This is the event payload: ", event.event_payload
 
-    @receiver(webhook_callback_received)
-    def on_webhook_callback_received(sender, **kwargs):
-        """Handle calback from Trello webhook."""
-        action = kwargs['action']
-        model = kwargs['model']
-        print (
-            u"Callback received for '%s' action on model '%s'" %
-            (action['type'], model['name'])
-        )
+There is a Django management command which can be used to synchronise any
+existing webhooks (in both directions), called ``sync_webhooks``. Run on
+its own, without any arguments, this will look up all the webhooks in
+the local Django database, and sync then with Trello (creating them if
+they don't already exist). It will also check Trello for any webhooks
+that it has registered that do not exist locally, and create them.
 
-On setup, an initial ``sync_webhooks`` management command would query
-the Trello API for any existing webhooks. Trello automaticall removes
-webhooks that fail to respond with a 200, so if any do exist, they are
-clearly being processed somewhere. The management command would offer
-the user the choice of leaving the webhook as-is, or of transferring it
-to the app, in which case a model would be added, and Trello would be
-updated to use the new app callback URL.
+Configuration
+-------------
 
-Subsequent ``save`` and ``delete`` operations would call the API.
+There are three mandatory environment settings (following the 
+`12-factor app <http://12factor.net/>`_ principal):
+
+* TRELLO_API_KEY
+* TRELLO_API_SECRET
+* CALLBACK_DOMAIN
+
+The first two are the core Trello developer API keys - available from here:
+https://trello.com/1/appKey/generate
+
+The CALLBACK_DOMAIN is included as you need to give a fully-qualified domain
+to the Trello API, and it's not always possible to infer what that might be
+- for instance when developing locally, you will need a tunnel from your
+machine out onto the web using something like `ngrok <https://ngrok.com/>`_.
+
+When managing hooks via the Trello API a third key is required, and this is
+user specific - the admin site has a link next to the `auth_token` field on
+the form for creating a new Webhook. This uses the Trello API client.js to
+perform the Oauth dance - and supplies the user token. All webhooks are
+registered against a user token. That's how it works. (NB you can pass any
+user tokens you have lying around to the ``sync_webhooks`` command and it
+will check Trello for any existing webhooks registered with those tokens.)
+
+Tests
+-----
+
+Ahem, there aren't any at the moment. 0% coverage, use at your own risk.
+(I will get round to it at some point.)
+
+Setup
+-----
+
+The app is available on PyPI as ``django-trello-webhooks``, so install with ``pip``:
 
 .. code:: shell
+    
+    $ pip install django-trello-webhooks
 
-    # assume Trello has 'test1', 'test2'
-    $ python manage.py sync_webhooks
+Addenda
+-------
 
-    Fetching webhooks from Trello...
+The webhook API works on the concept of a Trello model id. This refers to the object
+being watched - and could be a Board, a List, a Card etc. Getting these ids is a bit
+of a pain, to put it mildly, so I would strongly recommend using the excellent Trello
+Explorer app from @hwartig (http://www.hwartig.com/trelloapiexplorer).
 
-    - Found 2 webhooks registered with Trello:
+I would also recommend the use of ngrok (https://ngrok.com/) to expose your local
+Django dev server during development.
 
-    Webhook "test1" currently points to "https://foobar.com/1"; would you like to take this over? [Y/n] Y
+Further Developments
+--------------------
 
-    - Adding webhook "test1" to Django
-
-    Webhook "test2" currently points to "https://baz.com/2"; would you like to take this over? [Y/n] n
-
-    - Ignoring webhook "test2"
-
-    Webhook sync complete:
-
-    - 1 existing webhook has been added to Django
-    - 1 existing webhook has been ignored
-
-    Django and Trello are now synchronised; please use the Django admin site to manage your webhooks.
-
-    $
-
-Requirements
-------------
-
-1. Model Trello webhooks as Django models
-2. List all existing webhooks
-3. Add new webhooks via Django admin
-4. Delete webhooks via Django admin
-5. Sync webhooks with models (Trello -> Django)
-6. Sync models with webhooks (Django -> Trello)
-7. Pluggable backends for processing webhook events
+* Write some tests
+* Better integration with the Trello API
+* Handle user auth token expiry properly
+* Integration with Heroku's "Deploy to Heroku" button
