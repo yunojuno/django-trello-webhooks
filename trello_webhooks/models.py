@@ -4,11 +4,10 @@ import json
 import logging
 
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
+from django.db import models
 from django.utils import timezone
 
+from jsonfield import JSONField
 import trello
 
 from trello_webhooks import settings, signals
@@ -234,11 +233,12 @@ class CallbackEvent(models.Model):
     """Model used to log all callbacks."""
     # ref to the webhook that picked up the event
     webhook = models.ForeignKey(Webhook)
+    # events are read-only so just a timestamp required
     timestamp = models.DateTimeField()
     # the Trello event type - moveCard, commentCard, etc.
     event_type = models.CharField(max_length=50)
     # the complete request payload, as JSON
-    event_payload = models.TextField()
+    event_payload = JSONField()
 
     def save(self, *args, **kwargs):
         """Update timestamp"""
