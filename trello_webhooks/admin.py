@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 
 from django.conf import settings
@@ -18,8 +17,11 @@ class CallbackEventAdmin(admin.ModelAdmin):
 
     list_display = (
         'timestamp',
-        'webhook',
+        'webhook_',
         'event_type',
+        'board_',
+        'list_',
+        'card_',
     )
     list_filter = (
         'timestamp',
@@ -29,14 +31,17 @@ class CallbackEventAdmin(admin.ModelAdmin):
         'timestamp',
         'webhook',
         'event_type',
-        'event_payload'
+        'event_payload',
     )
     readonly_fields = (
         'timestamp',
         'webhook',
         'event_type',
-        'event_payload'
+        'event_payload',
     )
+
+    def webhook_(self, instance):
+        return instance.webhook.id
 
 
 class CallbackEventInline(admin.TabularInline):
@@ -45,27 +50,28 @@ class CallbackEventInline(admin.TabularInline):
     fields = (
         'admin_link',
         'timestamp_',
+        'action_taken_by',
         'event_type',
-        'creator',
-        'data'
+        'board_',
+        'list_',
+        'card_',
     )
     readonly_fields = (
         'timestamp_',
         'event_type',
         'admin_link',
-        'creator',
-        'data'
+        'action_taken_by',
+        'board_',
+        'list_',
+        'card_',
     )
     ordering = ('-id',)
 
-    def creator(self, instance):
-        return instance.action_member_fullname()
+    def action_taken_by(self, instance):
+        return instance.member.get('fullName')
 
     def timestamp_(self, instance):
         return date_format(instance.timestamp, settings.DATETIME_FORMAT)
-
-    def data(self, instance):
-        return json.dumps(instance.action_data())
 
     def admin_link(self, instance):
         url = reverse(
