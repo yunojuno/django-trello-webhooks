@@ -222,7 +222,7 @@ class Webhook(models.Model):
         event = CallbackEvent(
             webhook=self,
             event_type=action,
-            event_payload=payload
+            event_payload=body_text
         ).save()
         self._touch()
         signals.callback_received.send(sender=self.__class__, event=event)
@@ -245,3 +245,17 @@ class CallbackEvent(models.Model):
         self.timestamp = timezone.now()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def action_data(self):
+        """Returns the 'data' node from the payload."""
+        try:
+            return self.event_payload['action']['data']
+        except:
+            return None
+
+    def action_member_fullname(self):
+        """Returns the full name of person who took the action."""
+        try:
+            return self.event_payload['action']['memberCreator']['fullName']
+        except:
+            return None
