@@ -246,16 +246,42 @@ class CallbackEvent(models.Model):
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
+    @property
     def action_data(self):
         """Returns the 'data' node from the payload."""
-        try:
-            return self.event_payload['action']['data']
-        except:
-            return None
+        return self.event_payload.get('action', {}).get('data')
 
-    def action_member_fullname(self):
-        """Returns the full name of person who took the action."""
-        try:
-            return self.event_payload['action']['memberCreator']['fullName']
-        except:
-            return None
+    @property
+    def member(self):
+        """Returns 'memberCreator' JSON extracted from event_payload."""
+        return self.event_payload.get('action', {}).get('memberCreator')
+
+    @property
+    def board(self):
+        """Returns 'board' JSON extracted from event_payload."""
+        return self.action_data.get('board')
+
+    @property
+    def list(self):
+        """Returns 'list' JSON extracted from event_payload."""
+        return self.action_data.get('list')
+
+    @property
+    def card(self):
+        """Returns 'card' JSON extracted from event_payload."""
+        return self.action_data.get('card')
+
+    @property
+    def board_(self):
+        """Return board name if it exists (used in admin)."""
+        return self.board.get('name') if self.board else None
+
+    @property
+    def list_(self):
+        """Return list name if it exists (used in admin)."""
+        return self.list.get('name') if self.list else None
+
+    @property
+    def card_(self):
+        """Return card name if it exists (used in admin)."""
+        return self.card.get('name') if self.card else None
