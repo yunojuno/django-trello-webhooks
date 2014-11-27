@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 
+from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.template.defaultfilters import date as date_format
 from django.utils.html import format_html
 
 from trello_webhooks.models import Webhook, CallbackEvent
@@ -41,15 +44,28 @@ class CallbackEventInline(admin.TabularInline):
     extra = 0
     fields = (
         'admin_link',
+        'timestamp_',
         'event_type',
-        'timestamp',
+        'creator',
+        'data'
     )
     readonly_fields = (
+        'timestamp_',
         'event_type',
-        'timestamp',
         'admin_link',
+        'creator',
+        'data'
     )
     ordering = ('-id',)
+
+    def creator(self, instance):
+        return instance.action_member_fullname()
+
+    def timestamp_(self, instance):
+        return date_format(instance.timestamp, settings.DATETIME_FORMAT)
+
+    def data(self, instance):
+        return json.dumps(instance.action_data())
 
     def admin_link(self, instance):
         url = reverse(
@@ -59,7 +75,10 @@ class CallbackEventInline(admin.TabularInline):
             ),
             args=(instance.id,)
         )
-        return format_html(u'<a href="{}">Edit</a>', url)
+        return format_html(
+            u'<a href="{}">Edit</a>',
+            url
+        )
 
 
 class WebhookAdmin(admin.ModelAdmin):
