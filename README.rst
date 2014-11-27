@@ -5,6 +5,15 @@ Django application for managing Trello webhooks.
 
 **\*LOOKING FOR CONTRIBUTORS\***
 
+Status
+------
+
+It lives!
+
+The app currently works (on my machine) - so is really now at the "proof of concept"
+stage. I haven't packaged it properly, there are no tests (none at all), but
+it does really work.
+
 Background
 ----------
 
@@ -103,6 +112,38 @@ The app is available on PyPI as ``django-trello-webhooks``, so install with ``pi
     
     $ pip install django-trello-webhooks
 
+Further Developments
+--------------------
+
+* Write some tests
+* Better integration with the Trello API
+* Handle user auth token expiry properly
+* Integration with Heroku's "Deploy to Heroku" button
+
+Contributing
+------------
+
+Usual rules apply - fork, send pull request. Please try and adhere to the existing
+coding style - it may not be your style, but it's the project's style, so PRs will
+be rejected if they 'smell bad'. Specifically, given that this is an app that is
+pushing data over the wire, and therefore hard to debug - lots of logging, and
+lots of comments. Seriously. Lots.
+
+Licence
+-------
+
+MIT (see LICENCE file)
+
+Dependencies
+------------
+
+The core Trello API integration is done using `py-trello <https://github.com/sarumont/py-trello>_
+from Richard Kolkovich (@sarumont), so thanks to him for that. He naturally
+relies on `requests <http://docs.python-requests.org/en/latest/>`_ from Kenneth Reitz,
+as well as `request-oauthlib <https://requests-oauthlib.readthedocs.org/en/latest/>`, so
+thanks to anyone involved with either of those.
+
+
 Addenda
 -------
 
@@ -114,10 +155,6 @@ Explorer app from @hwartig (http://www.hwartig.com/trelloapiexplorer).
 I would also recommend the use of ngrok (https://ngrok.com/) to expose your local
 Django dev server during development.
 
-Further Developments
---------------------
-
-* Write some tests
-* Better integration with the Trello API
-* Handle user auth token expiry properly
-* Integration with Heroku's "Deploy to Heroku" button
+As for development itself - use virtualenv, install dependencies from requirements.txt
+and set up environment variables. If that doesn't mean anything to you - I'm afraid
+you have a lot to learn.
