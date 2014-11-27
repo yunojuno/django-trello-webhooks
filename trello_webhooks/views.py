@@ -36,11 +36,11 @@ def api_callback(request, auth_token, trello_model_id):
         # at this point we just need to say hello - we may not have
         # saved the webhook (it usually occurs as part of the initial save),
         # and so just respond with a 200 so that Trello is happy
-        logger.debug(u"Activation callback for %s", trello_model_id)
+        logger.info(u"Trello activation callback received for '%s'", trello_model_id)  # noqa
         return HttpResponse("Hello, Trello!")
 
     if request.method == 'POST':
-        logger.debug(u"Activity update for %r/%r", trello_model_id, trello_model_id)  # noqa
+        logger.info(u"Trello event callback received for '%s'", trello_model_id)
         try:
             (
                 Webhook.objects
