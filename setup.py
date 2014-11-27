@@ -9,10 +9,15 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name="django-trello-webhooks",
     version="0.1",
-    packages=['trello_webhooks', 'trello_webhooks.migrations'],
+    packages=[
+        'trello_webhooks',
+        'trello_webhooks.management',
+        'trello_webhooks.management.commands',
+        'trello_webhooks.templatetags'
+    ],
     install_requires=['django>=1.7.1'],
     include_package_data=True,
-    description='Django Trello Webhooks - simple Trello callback integration for Django.',
+    description='Django Trello Webhooks - Trello callback integration for Django.',
     long_description=README,
     url='https://github.com/yunojuno/django-trello-webhooks',
     author='Hugo Rodger-Brown',
