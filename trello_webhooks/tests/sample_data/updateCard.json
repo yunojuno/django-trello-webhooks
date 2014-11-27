@@ -1,0 +1,83 @@
+{
+    "action": {
+        "id": "5476fc0999be2646558ded16",
+        "idMemberCreator": "4f55dc2f8e0358c24d194be0",
+        "data": {
+            "listAfter": {
+                "name": "Second list",
+                "id": "5476fc06d998c88c890b901d"
+            },
+            "listBefore": {
+                "name": "To Do",
+                "id": "5476fb3271e6d2370b31e986"
+            },
+            "board": {
+                "shortLink": "TAAnwdP9",
+                "name": "Django Trello Webhooks Test Board",
+                "id": "5476fab52086e26047fa328c"
+            },
+            "card": {
+                "shortLink": "4K7LwAKx",
+                "idShort": 1,
+                "name": "Test card",
+                "id": "5476fb7437746ac807afe2a5",
+                "idList": "5476fc06d998c88c890b901d"
+            },
+            "old": {
+                "idList": "5476fb3271e6d2370b31e986"
+            }
+        },
+        "type": "updateCard",
+        "date": "2014-11-27T10:25:13.238Z",
+        "memberCreator": {
+            "id": "4f55dc2f8e0358c24d194be0",
+            "avatarHash": "852f1ba717618e2d0ba0c0a8de5eaad4",
+            "fullName": "Hugo Rodger-Brown",
+            "initials": "HRB",
+            "username": "hrb"
+        }
+    },
+    "model": {
+        "id": "5476fab52086e26047fa328c",
+        "name": "Django Trello Webhooks Test Board",
+        "desc": "",
+        "descData": null,
+        "closed": false,
+        "idOrganization": null,
+        "pinned": false,
+        "url": "https://trello.com/b/TAAnwdP9/django-trello-webhooks-test-board",
+        "shortUrl": "https://trello.com/b/TAAnwdP9",
+        "prefs": {
+            "permissionLevel": "public",
+            "voting": "disabled",
+            "comments": "members",
+            "invitations": "members",
+            "selfJoin": false,
+            "cardCovers": true,
+            "cardAging": "regular",
+            "calendarFeedEnabled": false,
+            "background": "blue",
+            "backgroundColor": "#0079BF",
+            "backgroundImage": null,
+            "backgroundImageScaled": null,
+            "backgroundTile": false,
+            "backgroundBrightness": "unknown",
+            "canBePublic": true,
+            "canBeOrg": true,
+            "canBePrivate": true,
+            "canInvite": true
+        },
+        "labelNames": {
+            "green": "",
+            "yellow": "",
+            "orange": "",
+            "red": "",
+            "purple": "",
+            "blue": "",
+            "pink": "",
+            "sky": "",
+            "lime": "",
+            "black": ""
+        }
+    }
+}

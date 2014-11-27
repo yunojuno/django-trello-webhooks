@@ -13,7 +13,8 @@ setup(
         'trello_webhooks',
         'trello_webhooks.management',
         'trello_webhooks.management.commands',
-        'trello_webhooks.templatetags'
+        'trello_webhooks.templatetags',
+        'trello_webhooks.tests',
     ],
     install_requires=['django>=1.7.1'],
     include_package_data=True,
