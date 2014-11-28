@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from settings import *
+from settings import *  # noqa
 
 DATABASES = {
     'default': {
@@ -9,22 +9,19 @@ DATABASES = {
 }
 
 try:
-    import coverage
-    import django_coverage
+    import coverage  # noqa
+    import django_coverage  # noqa
+    print u"Enabling coverage test runner"
     TEST_RUNNER = 'django_coverage.coverage_runner.CoverageRunner'
-
-    # django_coverage settings, in case it's enabled in LOCAL_APPS
-    COVERAGE_REPORT_HTML_OUTPUT_DIR = path.join('coverage_reports')
+    COVERAGE_REPORT_HTML_OUTPUT_DIR = 'coverage_reports'
     COVERAGE_USE_STDOUT = True
-
     COVERAGE_MODULE_EXCLUDES = [
         'tests$',
         'settings$',
-        '^urls$',
-        'urls',
+        'urls$',
         'locale$',
-        # '__init__',  # we need to see code that lives at the top of a module
-        'django',
+        '__init__',  # we need to see code that lives at the top of a module
+        # 'django',
         'fixtures',
         'templates',
         'migrations',

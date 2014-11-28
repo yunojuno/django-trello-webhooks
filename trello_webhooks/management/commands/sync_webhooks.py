@@ -4,8 +4,10 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from trello_webhooks.models import Webhook, TrelloClient
+# from trello import TrelloClient
 
+from trello_webhooks.models import Webhook
+# from trello_webhooks.settings import TRELLO_API_KEY, TRELLO_API_SECRET
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +58,8 @@ class Command(BaseCommand):
             return
 
         logger.info(u"Checking %i Trello user tokens for missing local webhooks", len(tokens))  # noqa
-        client = TrelloClient()
         for token in tokens:
-            for hook in client.list_hooks(token=token):
+            for hook in Webhook.client(token=token).list_hooks():
                 if local_match(hook):
                     logger.info(u"Remote webhook (%s) already exists locally", hook)  # noqa
                 else:

@@ -18,10 +18,11 @@ class CallbackEventAdmin(admin.ModelAdmin):
     list_display = (
         'timestamp',
         'webhook_',
-        'event_type',
+        'member_',
         'board_',
         'list_',
         'card_',
+        'event_type',
     )
     list_filter = (
         'timestamp',

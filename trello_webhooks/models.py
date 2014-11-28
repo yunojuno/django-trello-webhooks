@@ -1,5 +1,4 @@
 # # -*- coding: utf-8 -*-
-import functools
 import json
 import logging
 
@@ -10,22 +9,22 @@ from django.utils import timezone
 from jsonfield import JSONField
 import trello
 
-from trello_webhooks import settings, signals
+from trello_webhooks import settings
+from trello_webhooks import signals
 
 logger = logging.getLogger(__name__)
 
-# this provides simple access to the underlying trello.TrelloClient
-# class, without having to pass in the settings all the time.
-TrelloClient = functools.partial(
-    trello.TrelloClient,
-    settings.TRELLO_API_KEY,
-    settings.TRELLO_API_SECRET
-)
+
+# free-floating function to get a new trello.TrelloClient object
+# using the stored settings
+def get_trello_client(api_key=settings.TRELLO_API_KEY,
+                      api_secret=settings.TRELLO_API_SECRET,
+                      token=None):  # noqa
+    return trello.TrelloClient(api_key, api_secret=api_secret, token=token)
 
 
 class Webhook(models.Model):
     """Represents a single Trello API webhook."""
-    # something to remember this by, e.g. "Current board updates"
     trello_model_id = models.CharField(
         max_length=24,
         help_text=u"The id of the model being watched.",
@@ -35,6 +34,7 @@ class Webhook(models.Model):
         help_text=u"Webhook id returned from Trello API.",
         blank=True,
     )
+    # something to remember this by, e.g. "Current board updates"
     description = models.CharField(
         max_length=500,
         help_text=u"Description of the webhook.",
@@ -51,30 +51,6 @@ class Webhook(models.Model):
     # this reflects the reality of the Trello API
     unique_together = ('trello_model_id', 'auth_token')
 
-    @property
-    def has_trello_id(self):
-        return self.trello_id != ''
-
-    @property
-    def callback_url(self):
-        """The callback_url used by Trello."""
-        return settings.CALLBACK_DOMAIN + self.get_absolute_url()
-
-    def _client(self):
-        """Creates a TrelloClient from the instance token and app settings."""
-        assert self.auth_token != '', "Missing auth_token"
-        return TrelloClient(token=self.auth_token)
-
-    def get_absolute_url(self):
-        """The callback_url used by Trello."""
-        return reverse(
-            'trello_callback_url',
-            kwargs={
-                'auth_token': self.auth_token,
-                'trello_model_id': self.trello_model_id
-            }
-        )
-
     def __unicode__(self):
         if self.id:
             return u"Webhook %i: %s" % (self.id, self.callback_url)
@@ -89,6 +65,30 @@ class Webhook(models.Model):
             u"<Webhook id=%s, trello_id='%s', model='%s'>" %
             (self.id, self.trello_id, self.trello_model_id)
         )
+
+    def get_absolute_url(self):
+        """The callback_url used by Trello."""
+        return reverse(
+            'trello_callback_url',
+            kwargs={
+                'auth_token': self.auth_token,
+                'trello_model_id': self.trello_model_id
+            }
+        )
+
+    @property
+    def has_trello_id(self):
+        return self.trello_id != ''
+
+    @property
+    def callback_url(self):
+        """The callback_url used by Trello."""
+        return settings.CALLBACK_DOMAIN + self.get_absolute_url()
+
+    def get_client(self):
+        """Return a TrelloClient with the instance token."""
+        assert self.auth_token != '', "Missing auth_token."
+        return get_trello_client(token=self.auth_token)
 
     def save(self, *args, **kwargs):
         """Update timestamps, and sync with Trello on first save.
@@ -127,7 +127,7 @@ class Webhook(models.Model):
             else None.
 
         """
-        for hook in self._client().list_hooks():
+        for hook in self.get_client().list_hooks():
             if hook.id_model == self.trello_model_id:
                 logger.debug(u"Found matching Trello webhook registered for %s", self.trello_model_id)  # noqa
                 return hook
@@ -170,10 +170,10 @@ class Webhook(models.Model):
         Returns the updated object (unsaved)
 
         """
-        hook = self._client().create_hook(
+        hook = self.get_client().create_hook(
             callback_url=self.callback_url,
             id_model=self.trello_model_id,
-            desc=self.description
+            desc=self.description,
         )
         if hook is False:
             self.trello_id = ''
@@ -260,17 +260,22 @@ class CallbackEvent(models.Model):
     @property
     def board(self):
         """Returns 'board' JSON extracted from event_payload."""
-        return self.action_data.get('board')
+        return self.action_data.get('board') if self.action_data else None
 
     @property
     def list(self):
         """Returns 'list' JSON extracted from event_payload."""
-        return self.action_data.get('list')
+        return self.action_data.get('list') if self.action_data else None
 
     @property
     def card(self):
         """Returns 'card' JSON extracted from event_payload."""
-        return self.action_data.get('card')
+        return self.action_data.get('card') if self.action_data else None
+
+    @property
+    def member_(self):
+        """Return member name if it exists (used in admin)."""
+        return self.member.get('fullName') if self.member else None
 
     @property
     def board_(self):
