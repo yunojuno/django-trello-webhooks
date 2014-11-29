@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from settings import *  # noqa
 
+HIPCHAT_ENABLED = False
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -10,14 +12,10 @@ DATABASES = {
 
 try:
     import django_nose  # noqa
-    print u"Enabling django-nose test runner"
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-except ImportError:
-    pass
-
-try:
+    print u"TEST_RUNNER set to use django_nose"
     import coverage  # noqa
-    print u"Enabling coverage plugin to nose"
+    print u"TEST_RUNNER config includes coverage"
     NOSE_ARGS = [
         '--with-coverage',
         '--cover-package=trello_webhooks',
@@ -25,4 +23,4 @@ try:
         '--cover-html-dir=coverage_reports'
     ]
 except ImportError:
-    print u"Coverage is not enabled"
+    pass

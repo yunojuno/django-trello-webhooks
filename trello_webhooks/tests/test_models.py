@@ -110,6 +110,7 @@ class WebhookModelTests(TestCase):
         self.assertEqual(hook.trello_id, '')
         self.assertEqual(hook.description, '')
         self.assertEqual(hook.created_at, None)
+        self.assertEqual(hook.last_updated_at, None)
         self.assertEqual(hook.auth_token, '')
 
     def test_save_no_sync(self):
@@ -188,8 +189,8 @@ class WebhookModelTests(TestCase):
         w.description = "TEST4"
         self.assertNotEqual(w.description, h.desc)
         w._pull()
-        self.assertNotEqual(w.description, "TEST4")
-        self.assertEqual(w.description, h.desc)
+        self.assertEqual(w.description, "TEST4")
+        self.assertNotEqual(w.description, h.desc)
 
         # confirm that the local object hasn't been saved
         self.assertIsNone(w.id)
@@ -224,7 +225,7 @@ class WebhookModelTests(TestCase):
         # add a remote that looks like the existing w
         h = trello.TrelloClient.add_hook(id_model="OK", hook_id="TEST2", desc="TEST3")
         w.sync(save=False)
-        self.assertEqual(w.trello_id, h.id_model)
+        self.assertEqual(w.trello_id, h.id)
 
     def test__touch(self):
         hook = Webhook().save(sync=False)

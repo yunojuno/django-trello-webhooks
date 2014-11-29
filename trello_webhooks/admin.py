@@ -48,7 +48,6 @@ class CallbackEventAdmin(admin.ModelAdmin):
         return instance.webhook.id
 
     def rendered(self, instance):
-        print instance.render()
         return instance.render()
 
     def has_template(self, instance):

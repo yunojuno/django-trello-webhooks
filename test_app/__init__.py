@@ -1,1 +1,1 @@
-from test_app import signals
+from test_app import signals  # noqa
