@@ -8,10 +8,11 @@
   "repository": "https://github.com/yunojuno/django-trello-webhooks",
   "success_url": "/welcome",
   "env": {
-    "TRELLO_API_KEY": "your_key_goes_here",
-    "TRELLO_API_SECRET": "your_secret_goes_here",
-    "CALLBACK_DOMAIN": "your_domain_goes_here",
-    "HIPCHAT_API_TOKEN": "your_token_goes_here"
+    "TRELLO_API_KEY": "your_trello_api_key",
+    "TRELLO_API_SECRET": "your_trello_api_secret",
+    "CALLBACK_DOMAIN": "this_applications_domain",
+    "HIPCHAT_API_TOKEN": "your_hipchat_api_token",
+    "HIPCHAT_ROOM_ID": "your_hipchat_room_id"
   },
   "addons": [
     "heroku-postgresql"
