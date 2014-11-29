@@ -16,5 +16,3 @@ def on_callback_received(sender, **kwargs):
     event = kwargs.pop('event')
     if settings.HIPCHAT_ENABLED:
         send_to_hipchat(event.render())
-    else:
-        logger.info(event.render())
