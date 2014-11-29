@@ -4,6 +4,8 @@ import logging
 
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.base import TemplateDoesNotExist
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from jsonfield import JSONField
@@ -291,3 +293,37 @@ class CallbackEvent(models.Model):
     def card_(self):
         """Return card name if it exists (used in admin)."""
         return self.card.get('name') if self.card else None
+
+    @property
+    def template(self):
+        """Return full path to render template, based on event_type."""
+        return 'trello_webhooks/%s.html' % self.event_type
+
+    def render(self):
+        """Render the event using an HTML template.
+
+        The path to the template comes from the `template` property,
+        which is derived from the event_type.
+
+        If the template does not exist (typically this would be because
+        we capture a new event type that we haven't previously encountered),
+        a warning is logged, and None is returned. (We return None instead
+        of an empty string to make it clear that something has gone wrong -
+        an empty string _could_ be a realistic output, if someone has
+        overridden a template and spelled the context vars incorrectly.)
+
+        The event_payload is passed in to the template as the context.
+
+        Default templates exist for most event types, but you are encouraged
+        to override these templates in your own project (see the template
+        property for the full path to the template that is loaded).
+
+        """
+        try:
+            return render_to_string(self.template, self.event_payload)
+        except TemplateDoesNotExist:
+            logger.warning(
+                u"Missing or misconfigured template: '%s'",
+                self.template
+            )
+            return None

@@ -2,19 +2,19 @@
 import datetime
 import json
 import mock
-from os import path
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 import trello
 
+from trello_webhooks.models import Webhook, CallbackEvent
 from trello_webhooks.settings import (
     TRELLO_API_KEY,
     TRELLO_API_SECRET,
     CALLBACK_DOMAIN
 )
-from trello_webhooks.models import Webhook, CallbackEvent
+from trello_webhooks.tests import get_sample_data
 
 
 class MockTrelloClient(object):
@@ -80,19 +80,6 @@ class WebhookModelTests(TestCase):
         # clear out the hooks collection on each test
         MockTrelloClient.hooks = []
 
-    def _test_payload(self, format_):
-        """Return test JSON payload as 'json' or 'text' object.
-
-        Args:
-            format_: string, one of either 'json' or 'text'
-        """
-        _path = path.join(
-            path.abspath(path.dirname(__file__)),
-            'sample_data/createCard.json'
-        )
-        with open(_path, 'r') as f:
-            return f.read() if format_ == 'text' else json.load(f)
-
     def test_str_repr(self):
         hook = Webhook(trello_id='A', trello_model_id='B', auth_token='C')
         self.assertEqual(
@@ -127,7 +114,9 @@ class WebhookModelTests(TestCase):
 
     def test_save_no_sync(self):
         # Check that save updates the timestamps
+        self.assertEqual(Webhook.objects.count(), 0)
         hook = Webhook().save(sync=False)
+        self.assertEqual(Webhook.objects.count(), 1)
         self.assertIsNotNone(hook.id)
         self.assertEqual(hook.trello_model_id, '')
         self.assertEqual(hook.trello_id, '')
@@ -143,7 +132,11 @@ class WebhookModelTests(TestCase):
         self.assertNotEqual(hook.last_updated_at, timestamp)
 
     def test_delete(self):
-        self.fail('Write me')
+        self.assertEqual(Webhook.objects.count(), 0)
+        hook = Webhook().save(sync=False)
+        self.assertEqual(Webhook.objects.count(), 1)
+        hook.delete()
+        self.assertEqual(Webhook.objects.count(), 0)
 
     def test__client(self):
         # should fail without a token
@@ -179,13 +172,25 @@ class WebhookModelTests(TestCase):
         w._pull()
         self.assertEqual(w.trello_id, "")
 
-        # set up a fake remote hook with id=TEST2 and model_id=TEST1
-        h = trello.TrelloClient.add_hook(id_model="TEST1", hook_id="TEST2")
+        # set up a fake remote hook with a matching id
+        h = trello.TrelloClient.add_hook(id_model="TEST1", hook_id="TEST2", desc="TEST3")
+        # now we do have a matching remote
         self.assertIsNotNone(w._fetch())
+        # so we should update the id and description when we pull
         self.assertNotEqual(w.trello_id, h.id)
-        # pulling should update the local version
+        self.assertEqual(w.description, "")
+        self.assertNotEqual(w.description, h.desc)
         w._pull()
         self.assertEqual(w.trello_id, h.id)
+        self.assertEqual(w.description, h.desc)
+
+        # however, if we have an existing description, we should _not_ overwrite
+        w.description = "TEST4"
+        self.assertNotEqual(w.description, h.desc)
+        w._pull()
+        self.assertNotEqual(w.description, "TEST4")
+        self.assertEqual(w.description, h.desc)
+
         # confirm that the local object hasn't been saved
         self.assertIsNone(w.id)
 
@@ -205,6 +210,22 @@ class WebhookModelTests(TestCase):
         self.assertEqual(w.trello_id, "KO")
         self.assertTrue(w.has_trello_id)
 
+    @mock.patch('trello.TrelloClient', MockTrelloClient)
+    def test_sync_true(self):
+        self.fail('Write me')
+
+    @mock.patch('trello.TrelloClient', MockTrelloClient)
+    def test_sync_false(self):
+        # if there is no trello_id, then a sync should update it
+        w = Webhook(auth_token="TOKEN", trello_model_id="OK")
+        w.sync(save=False)
+        self.assertEqual(w.trello_id, "KO")
+
+        # add a remote that looks like the existing w
+        h = trello.TrelloClient.add_hook(id_model="OK", hook_id="TEST2", desc="TEST3")
+        w.sync(save=False)
+        self.assertEqual(w.trello_id, h.id_model)
+
     def test__touch(self):
         hook = Webhook().save(sync=False)
         self.assertTrue(hook.created_at == hook.last_updated_at)
@@ -213,7 +234,7 @@ class WebhookModelTests(TestCase):
 
     def test_add_callback(self):
         hook = Webhook().save(sync=False)
-        payload = self._test_payload('json')
+        payload = get_sample_data('commentCard', 'json')
         event = hook.add_callback(json.dumps(payload))
         self.assertEqual(event.webhook, hook)
         self.assertEqual(event.event_payload, payload)
@@ -252,27 +273,8 @@ class WebhookModelTests(TestCase):
         hook.trello_id = '1'
         self.assertTrue(hook.has_trello_id)
 
-    def test_sync(self):
-        self.fail('Write me')
-
 
 class CallbackEventModelTest(TestCase):
-
-    def _test_payload(self, action, format_):
-        """Return test JSON payload as 'json' or 'text' object.
-
-        Args:
-            action: string, one of the filenames, without the extension,
-                e.g. 'commentCard', 'createCard' etc. Look in sample_data/
-                for the full list
-            format_: string, one of either 'json' or 'text'
-        """
-        _path = path.join(
-            path.abspath(path.dirname(__file__)),
-            'sample_data/%s.json' % action
-        )
-        with open(_path, 'r') as f:
-            return f.read() if format_ == 'text' else json.load(f)
 
     def test_default_properties(self):
         pass
@@ -283,53 +285,53 @@ class CallbackEventModelTest(TestCase):
     def test_action_data(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
 
     def test_member(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.member, ce.event_payload['action']['memberCreator'])
 
     def test_board(self):
         ce = CallbackEvent()
         self.assertEqual(ce.board, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.board, ce.event_payload['action']['data']['board'])
 
     def test_list(self):
         ce = CallbackEvent()
         self.assertEqual(ce.list, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.list, ce.event_payload['action']['data']['list'])
 
     def test_card(self):
         ce = CallbackEvent()
         self.assertEqual(ce.card, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card, ce.event_payload['action']['data']['card'])
 
     def test_member_(self):
         ce = CallbackEvent()
         self.assertEqual(ce.member_, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.member_, ce.event_payload['action']['memberCreator']['fullName'])  # noqa
 
     def test_board_(self):
         ce = CallbackEvent()
         self.assertEqual(ce.board_, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.board_, ce.event_payload['action']['data']['board']['name'])  # noqa
 
     def test_list_(self):
         ce = CallbackEvent()
         self.assertEqual(ce.list_, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.list_, ce.event_payload['action']['data']['list']['name'])  # noqa
 
     def test_card_(self):
         ce = CallbackEvent()
         self.assertEqual(ce.card_, None)
-        ce.event_payload = self._test_payload('createCard', 'text')
+        ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_, ce.event_payload['action']['data']['card']['name'])  # noqa

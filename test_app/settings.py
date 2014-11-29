@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from os import environ, path
+from os import environ
 
 import dj_database_url
 
@@ -19,10 +19,23 @@ for s in MANDATORY_ENVIRONMENT_SETTINGS:
 TRELLO_API_KEY = environ['TRELLO_API_KEY']
 TRELLO_API_SECRET = environ['TRELLO_API_SECRET']
 CALLBACK_DOMAIN = environ['CALLBACK_DOMAIN']
+# optional for the test app to send updates to HipChat
+HIPCHAT_API_TOKEN = environ.get('HIPCHAT_API_TOKEN', None)
+HIPCHAT_ROOM_ID = environ.get('HIPCHAT_ROOM_ID', None)
+HIPCHAT_ENABLED = HIPCHAT_API_TOKEN and HIPCHAT_ROOM_ID
+if HIPCHAT_ENABLED:
+    print u"HipChat integration is ENABLED"
+else:
+    print u"HipChat integration is DISABLED"
 # ============= / APP SETTINGS ===================
 
 DEBUG = True
 TEMPLATE_DEBUG = True
+
+USE_L10N = True
+USE_I18N = True
+USE_TZ = True
+TIMEZONE = 'Europe/London'
 
 DATABASES = {
     # automatically assumes DATABASE_URL env var
@@ -36,6 +49,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'test_app',
     'trello_webhooks',
 )
 
@@ -125,29 +139,4 @@ LOGGING = {
 
 ROOT_URLCONF = 'test_app.urls'
 
-###################################################
-# django_coverage overrides
-
-# Specify a list of regular expressions of module paths to exclude
-# from the coverage analysis. Examples are ``'tests$'`` and ``'urls$'``.
-# This setting is optional.
-COVERAGE_MODULE_EXCLUDES = [
-    'tests$',
-    'settings$',
-    'urls$',
-    'locale$',
-    'common.views.test',
-    '__init__',
-    'django',
-    'migrations',
-    'trello_webhooks.admin',
-]
-COVERAGE_REPORT_HTML_OUTPUT_DIR = 'coverage/html'
-COVERAGE_USE_STDOUT = True
-
 APPEND_SLASH = True
-
-USE_L10N = True
-USE_I18N = True
-USE_TZ = True
-TIMEZONE = 'Europe/London'

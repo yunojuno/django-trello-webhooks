@@ -9,24 +9,20 @@ DATABASES = {
 }
 
 try:
+    import django_nose  # noqa
+    print u"Enabling django-nose test runner"
+    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+except ImportError:
+    pass
+
+try:
     import coverage  # noqa
-    import django_coverage  # noqa
-    print u"Enabling coverage test runner"
-    TEST_RUNNER = 'django_coverage.coverage_runner.CoverageRunner'
-    COVERAGE_REPORT_HTML_OUTPUT_DIR = 'coverage_reports'
-    COVERAGE_USE_STDOUT = True
-    COVERAGE_MODULE_EXCLUDES = [
-        'tests$',
-        'settings$',
-        'urls$',
-        'locale$',
-        '__init__',  # we need to see code that lives at the top of a module
-        # 'django',
-        'fixtures',
-        'templates',
-        'migrations',
-        # Above are the defaults, below are YJ-specific extras
-        'admin',  # ie, all admin.py files
+    print u"Enabling coverage plugin to nose"
+    NOSE_ARGS = [
+        '--with-coverage',
+        '--cover-package=trello_webhooks',
+        '--cover-html',
+        '--cover-html-dir=coverage_reports'
     ]
 except ImportError:
-    print u"Coverage is not enabled as missing coverage, django-coverage apps"
+    print u"Coverage is not enabled"

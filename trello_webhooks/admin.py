@@ -18,11 +18,12 @@ class CallbackEventAdmin(admin.ModelAdmin):
     list_display = (
         'timestamp',
         'webhook_',
+        'event_type',
+        'has_template',
         'member_',
         'board_',
         'list_',
         'card_',
-        'event_type',
     )
     list_filter = (
         'timestamp',
@@ -33,38 +34,44 @@ class CallbackEventAdmin(admin.ModelAdmin):
         'webhook',
         'event_type',
         'event_payload',
+        'rendered'
     )
     readonly_fields = (
         'timestamp',
         'webhook',
         'event_type',
         'event_payload',
+        'rendered'
     )
 
     def webhook_(self, instance):
         return instance.webhook.id
 
+    def rendered(self, instance):
+        print instance.render()
+        return instance.render()
 
-class CallbackEventInline(admin.TabularInline):
+    def has_template(self, instance):
+        return instance.render() is not None
+
+
+class CallbackEventInline(admin.StackedInline):
     model = CallbackEvent
     extra = 0
     fields = (
-        'admin_link',
         'timestamp_',
         'action_taken_by',
         'event_type',
-        'board_',
-        'list_',
-        'card_',
+        'rendered'
     )
     readonly_fields = (
         'timestamp_',
         'event_type',
-        'admin_link',
         'action_taken_by',
         'board_',
         'list_',
         'card_',
+        'rendered'
     )
     ordering = ('-id',)
 
@@ -72,9 +79,6 @@ class CallbackEventInline(admin.TabularInline):
         return instance.member.get('fullName')
 
     def timestamp_(self, instance):
-        return date_format(instance.timestamp, settings.DATETIME_FORMAT)
-
-    def admin_link(self, instance):
         url = reverse(
             'admin:%s_%s_change' % (
                 instance._meta.app_label,
@@ -83,9 +87,12 @@ class CallbackEventInline(admin.TabularInline):
             args=(instance.id,)
         )
         return format_html(
-            u'<a href="{}">Edit</a>',
-            url
+            u'<a href="{}">{}</a>',
+            url, date_format(instance.timestamp, settings.DATETIME_FORMAT)
         )
+
+    def rendered(self, instance):
+        return instance.render()
 
 
 class WebhookAdmin(admin.ModelAdmin):
