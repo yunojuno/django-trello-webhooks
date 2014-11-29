@@ -7,6 +7,9 @@
   ],
   "repository": "https://github.com/yunojuno/django-trello-webhooks",
   "success_url": "/welcome",
+  "scripts": {
+    "postdeploy": "python manage.py migrate --noinput"
+  },
   "env": {
     "TRELLO_API_KEY": "your_trello_api_key",
     "TRELLO_API_SECRET": "your_trello_api_secret",
