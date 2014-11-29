@@ -1,0 +1,19 @@
+{
+  "name": "Django Trello Webhooks",
+  "description": "Trello webhook management through Django",
+  "keywords": [
+    "django",
+    "trello",
+  ],
+  "repository": "https://github.com/yunojuno/django-trello-webhooks",
+  "success_url": "/welcome",
+  "env": {
+    "TRELLO_API_KEY": "your_key_goes_here",
+    "TRELLO_API_SECRET": "your_secret_goes_here",
+    "CALLBACK_DOMAIN": "your_domain_goes_here",
+    "HIPCHAT_API_TOKEN": "your_token_goes_here"
+  },
+  "addons": [
+    "heroku-postgresql",
+  ]
+}
