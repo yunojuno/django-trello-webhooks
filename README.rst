@@ -8,11 +8,13 @@ Django application for managing Trello webhooks.
 Status
 ------
 
-It lives!
+.. image:: https://travis-ci.org/yunojuno/django-trello-webhooks.svg?branch=master
+    :target: https://travis-ci.org/yunojuno/django-trello-webhooks
 
-The app currently works (on my machine) - so is really now at the "proof of concept"
-stage. I haven't packaged it properly, there are no tests (none at all), but
-it does really work.
+The app is now working, and deployable to Heroku (see below). The main outstanding
+issue is writing some proper docs, but until / unless there is any genuine external
+interest shown in this project I won't be spending any formal time on it, so
+please don't expect much more.
 
 Background
 ----------
@@ -158,3 +160,27 @@ Django dev server during development.
 As for development itself - use virtualenv, install dependencies from requirements.txt
 and set up environment variables. If that doesn't mean anything to you - I'm afraid
 you have a lot to learn.
+
+Deploying to Heroku
+-------------------
+
+TODO: write proper docs
+
+.. image:: https://www.herokucdn.com/deploy/button.png
+    :target: https://heroku.com/deploy?template=https://github.com/yunojuno/django-trello-webhooks
+
+This repo contains a test app can be deployed directly to Heroku using their Deploy button.
+This app will pipe Trello updates directly to a Hipchat room. You will need the following
+information in order to set up and configure the app:
+
+``TRELLO_API_KEY``, ``TRELLO_API_SECRET``, which you can get from here - https://trello.com/1/appKey/generate
+``HIPCHAT_API_TOKEN``, ``HIPCHAT_ROOM_ID``, which you can get from hipchat.com
+
+In addition, you will need to set the ``CALLBACK_DOMAIN`` environment setting once the app
+has been deployed. This should be set to the <app_name>.herokuapp.com domain, that is
+available once Heroku has deployed it.
+
+The recommended hacking method (IMO) is to set up the Heroku app, and use that as your
+main git remote - pull it down locally, change the relevant templates, push back to
+Heroku. If you're actually adding functionality, then please follow the **contributing**
+instructions above.
