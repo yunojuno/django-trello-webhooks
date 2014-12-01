@@ -9,6 +9,7 @@
   "scripts": {
     "postdeploy": "python manage.py migrate --noinput"
   },
+  "logo": "https://d248m4cj7wf7uy.cloudfront.net/images/favicons/black/favicon-160x160.png",
   "env": {
     "TRELLO_API_KEY": {
         "description": "Trello API Key, from https://trello.com/1/appKey/generate",
