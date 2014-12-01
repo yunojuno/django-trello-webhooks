@@ -48,4 +48,7 @@ def trello_updates(new, old):
         containing old, new values of the field.
 
     """
-    return {k: (v, new[k]) for k, v in old.iteritems()}
+    try:
+        return {k: (v, new[k]) for k, v in old.iteritems()}
+    except KeyError:
+        return {k: (v, None) for k, v in old.iteritems()}
