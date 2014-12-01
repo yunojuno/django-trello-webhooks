@@ -96,7 +96,10 @@ class CallbackEventInline(admin.StackedInline):
 
 class WebhookAdmin(admin.ModelAdmin):
 
-    inlines = [CallbackEventInline]
+    # disable for now - may overload system by loading
+    # every callback on a single page.
+    # inlines = [CallbackEventInline]
+
     list_display = (
         'description',
         'trello_model_id',
