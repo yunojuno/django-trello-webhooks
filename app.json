@@ -6,7 +6,6 @@
     "trello"
   ],
   "repository": "https://github.com/yunojuno/django-trello-webhooks",
-  "success_url": "/welcome",
   "scripts": {
     "postdeploy": "python manage.py migrate --noinput"
   },
