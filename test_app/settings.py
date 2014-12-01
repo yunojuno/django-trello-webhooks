@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from os import environ
+from os import environ, path
 
 import dj_database_url
 
@@ -31,6 +31,10 @@ else:
 
 DEBUG = environ.get('DEBUG', False)
 TEMPLATE_DEBUG = DEBUG
+
+# You should really update this in your app!
+# see https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS', '*')
 
 USE_L10N = True
 USE_I18N = True
@@ -76,6 +80,9 @@ TEMPLATE_DIRS = (
 )
 
 STATIC_URL = "/static/"
+
+PROJECT_ROOT = path.realpath(path.dirname(__file__))
+STATIC_ROOT = path.join(PROJECT_ROOT, 'static')
 
 SECRET_KEY = "secret"
 
