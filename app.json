@@ -16,11 +16,12 @@
     },
     "TRELLO_API_SECRET": {
         "description": "Trello API Secret, from https://trello.com/1/appKey/generate",
-        "required": true,
+        "required": true
     },
     "CALLBACK_DOMAIN": {
-        "description": "The fully-qualified domain of the new site, used by Trello for its callbacks.",
-        "required": true
+        "description": "The hosted domain to which Trello will post callbacks. You **must** update this post-deployment to the new domain.",
+        "value": "http://heroku-app-name.herokuapp.com",
+        "required": false
     },
     "HIPCHAT_API_TOKEN": {
         "description": "HipChat API token, required if you want to use the test app, available from hipchat.com",
@@ -29,6 +30,7 @@
     "HIPCHAT_ROOM_ID": {
         "description": "The ID of the room to which to send updates. Available from hipchat.com",
         "required": false
+    }
   },
   "addons": [
     "heroku-postgresql"
