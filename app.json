@@ -10,11 +10,25 @@
     "postdeploy": "python manage.py migrate --noinput"
   },
   "env": {
-    "TRELLO_API_KEY": "your_trello_api_key",
-    "TRELLO_API_SECRET": "your_trello_api_secret",
-    "CALLBACK_DOMAIN": "this_applications_domain",
-    "HIPCHAT_API_TOKEN": "your_hipchat_api_token",
-    "HIPCHAT_ROOM_ID": "your_hipchat_room_id"
+    "TRELLO_API_KEY": {
+        "description": "Trello API Key, from https://trello.com/1/appKey/generate",
+        "required": true
+    },
+    "TRELLO_API_SECRET": {
+        "description": "Trello API Secret, from https://trello.com/1/appKey/generate",
+        "required": true,
+    },
+    "CALLBACK_DOMAIN": {
+        "description": "The fully-qualified domain of the new site, used by Trello for its callbacks.",
+        "required": true
+    },
+    "HIPCHAT_API_TOKEN": {
+        "description": "HipChat API token, required if you want to use the test app, available from hipchat.com",
+        "required": false
+    },
+    "HIPCHAT_ROOM_ID": {
+        "description": "The ID of the room to which to send updates. Available from hipchat.com",
+        "required": false
   },
   "addons": [
     "heroku-postgresql"
