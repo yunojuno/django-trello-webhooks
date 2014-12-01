@@ -73,11 +73,58 @@ the local Django database, and sync then with Trello (creating them if
 they don't already exist). It will also check Trello for any webhooks
 that it has registered that do not exist locally, and create them.
 
+Rendering the payload
+~~~~~~~~~~~~~~~~~~~~~
+
+Once you've received a callback, along with its JSON payload, the next
+question is how to use it effectively. It is assumed (by me) that the
+core use case for this project is to pipe the events elsewhere - in
+our case it's to HipChat, but other messaging services are available - 
+you've could even go old-school and email people stuff. Whatever you
+decide to do, you will probably want to convert the JSON into some
+form of readable text output. In order to facilitate this each event
+type (``createCard``, ``commentCard`` etc.) has an associated Django
+template. The ``CallbackEvent`` model has a ``render`` method that
+passes the entire JSON payload into the relevant template as the
+template context, so that you can extract the data.
+
+Below is an example of the default ``commendCard.html`` template.
+
+.. code:: html
+
+    <b>{{action.memberCreator.fullName}}</b> commented
+    on the card "<b>{{action.data.card.name}}</b>"
+    on the board "<b>{{action.data.board.name}}</b>":
+    <blockquote>{{action.data.text}}</blockquote>
+    
+The default templates are designed to show what is possible - and it's
+recommended that you override these in your application. You can do
+this using simple Django template overriding - simply add your template
+to your application in the same locaion (``/templates/trello_webhooks/<event_type>.html``)
+and declare your app **above** the ``trello_webhooks`` app in the
+``INSTALLED_APPS`` setting, and your template will be used instead
+of the default.
+
+The combination of overrideable templates and the ``callback_received`` signal
+mean that you should be able to integrate Trello fully into your app.
+
+**NB One word of caution**
+
+I have made no attempt to ensure that all events are covered - that's not
+really the point. This app will store and forward any event that it
+receives. In order to make it a little easier to manage unexpected events
+there is a property of the ``CallbackEvent`` that is displayed in the
+admin site list view - **Has Template**. If this is True, then this is
+an event for which we have a default template. If it's False, then
+this is a new one on us - and you are encouraged to play around with
+adding a new template. Do please feed all new default templates back
+to the project.
+
 Configuration
 -------------
 
 There are three mandatory environment settings (following the 
-`12-factor app <http://12factor.net/>`_ principal):
+`12-factor app <http://12factor.net/>`_ principle):
 
 * TRELLO_API_KEY
 * TRELLO_API_SECRET
