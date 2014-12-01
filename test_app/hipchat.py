@@ -3,7 +3,6 @@ from django.conf import settings
 
 import requests
 
-
 HIPCHAT_API_URL = 'https://api.hipchat.com/v1/rooms/message'
 
 

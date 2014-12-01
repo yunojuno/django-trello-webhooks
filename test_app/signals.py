@@ -1,5 +1,6 @@
 # # -*- coding: utf-8 -*-
 import logging
+from os import path, listdir
 
 from django.conf import settings
 from django.dispatch import receiver
@@ -11,18 +12,33 @@ from test_app.hipchat import send_to_hipchat
 logger = logging.getLogger(__name__)
 
 
+def get_supported_events():
+    """Returns the list of available _local_ templates.
+
+    If a template exists in the local app, it will take precedence
+    over the default trello_webhooks template. The base assumption
+    for this function is that _if_ a local template exists, then this
+    is an event we are interested in.
+
+    """
+    app_template_path = path.join(
+        path.realpath(path.dirname(__file__)),
+        'templates/trello_webhooks'
+    )
+    return [t.split('.')[0] for t in listdir(app_template_path)]
+
+
 @receiver(callback_received, dispatch_uid="callback_received")
 def on_callback_received(sender, **kwargs):
     # if a template exists for the event_type, then send the output
     # as a normal notification, in 'yellow'
     # if no template exists, send a notification in 'red'
     event = kwargs.pop('event')
-    if settings.HIPCHAT_ENABLED:
-        rendered = event.render()
-        color = "yellow" if rendered else "red"
-        html = rendered or (
-            u"No default template available for callback "
-            "action '<strong>%s</strong>'"
-            % event.event_type
-        )
-        send_to_hipchat(html, color=color)
+    if event.event_type in get_supported_events():
+        if settings.HIPCHAT_ENABLED:
+            send_to_hipchat(event.render())
+        else:
+            logger.info(
+                u"HipChat is DISABLED, logging message instead: '%s'",
+                event.render()
+            )
