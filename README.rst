@@ -53,18 +53,32 @@ The important bit is then how you use the callback in your application.
 This is done via Django signals. On each webhook callback, the app sends the
 ``callback_received`` signal, passing in the data received via the callback.
 
-Your application then connects via this signal:
+Your application then connects via this signal; below is taken from the
+included test_app, which sends the formatted event to HipChat:
 
 .. code:: python
 
+    from django.conf import settings
     from django.dispatch import receiver
+
+    from test_app.hipchat import send_to_hipchat
     
     from trello_webhooks.signals import callback_received
     
     @receiver(callback_received, dispatch_uid="callback_received")
     def on_callback_received(sender, **kwargs):
+    if settings.HIPCHAT_ENABLED:
         event = kwargs.pop('event')
-        print "This is the event payload: ", event.event_payload
+        send_to_hipchat(event.render())
+        
+If you wanted to filter out only certain events for sending:
+
+.. code:: python
+
+    def on_callback_received(sender, **kwargs):
+        event = kwargs.pop('event')
+        if event.event_type == 'commentCard':
+            send_to_hipchat(event.render())
 
 There is a Django management command which can be used to synchronise any
 existing webhooks (in both directions), called ``sync_webhooks``. Run on
