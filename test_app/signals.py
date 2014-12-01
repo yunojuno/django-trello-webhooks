@@ -21,7 +21,8 @@ def on_callback_received(sender, **kwargs):
         rendered = event.render()
         color = "yellow" if rendered else "red"
         html = rendered or (
-            u"No template available for '%s'"
+            u"No default template available for callback "
+            "action '<strong>%s</strong>'"
             % event.event_type
         )
         send_to_hipchat(html, color=color)

@@ -112,7 +112,7 @@ LOGGING = {
         'trello_webhooks': {
             'handlers': ['console'],
             'propagate': False,
-            'level': 'WARNING',
+            'level': 'DEBUG',
         },
         'requests': {
             'handlers': ['console'],
