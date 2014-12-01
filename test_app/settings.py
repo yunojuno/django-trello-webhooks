@@ -29,8 +29,8 @@ else:
     print u"HipChat integration is DISABLED"
 # ============= / APP SETTINGS ===================
 
-DEBUG = True
-TEMPLATE_DEBUG = True
+DEBUG = environ.get('DEBUG', False)
+TEMPLATE_DEBUG = DEBUG
 
 USE_L10N = True
 USE_I18N = True
