@@ -5,6 +5,20 @@ Django application for managing Trello webhooks.
 
 **\*LOOKING FOR CONTRIBUTORS\***
 
+**UPDATE 01-Dec-2014**
+
+The application can now be deployed directly to Heroku using their Deploy
+button. In addition, the test app that is bundled into this repo has been
+deployed and is live.
+
+* It is listening to a public `Trello board <https://trello.com/b/TAAnwdP9/>`_
+* Updates are posted to an open `HipChat room <https://www.hipchat.com/gvqDlEqs2>`_
+* You can log in to the `admin site <http://django-trello-webhooks.herokuapp.com/admin/>`_
+  using the username **public** and the password **trello**
+
+I am going to post further docs on the Trello board itself, so that will become
+the primary source for updates: https://trello.com/b/TAAnwdP9/
+
 Status
 ------
 
@@ -62,15 +76,15 @@ included test_app, which sends the formatted event to HipChat:
     from django.dispatch import receiver
 
     from test_app.hipchat import send_to_hipchat
-    
+
     from trello_webhooks.signals import callback_received
-    
+
     @receiver(callback_received, dispatch_uid="callback_received")
     def on_callback_received(sender, **kwargs):
     if settings.HIPCHAT_ENABLED:
         event = kwargs.pop('event')
         send_to_hipchat(event.render())
-        
+
 If you wanted to filter out only certain events for sending:
 
 .. code:: python
@@ -93,7 +107,7 @@ Rendering the payload
 Once you've received a callback, along with its JSON payload, the next
 question is how to use it effectively. It is assumed (by me) that the
 core use case for this project is to pipe the events elsewhere - in
-our case it's to HipChat, but other messaging services are available - 
+our case it's to HipChat, but other messaging services are available -
 you've could even go old-school and email people stuff. Whatever you
 decide to do, you will probably want to convert the JSON into some
 form of readable text output. In order to facilitate this each event
@@ -110,11 +124,11 @@ Below is an example of the default ``commendCard.html`` template.
     on the card "<b>{{action.data.card.name}}</b>"
     on the board "<b>{{action.data.board.name}}</b>":
     <blockquote>{{action.data.text}}</blockquote>
-    
+
 The default templates are designed to show what is possible - and it's
 recommended that you override these in your application. You can do
-this using simple Django template overriding - simply add your template
-to your application in the same locaion (``/templates/trello_webhooks/<event_type>.html``)
+this using Django template overriding - add your template to your
+application in the same locaion (``/templates/trello_webhooks/<event_type>.html``)
 and declare your app **above** the ``trello_webhooks`` app in the
 ``INSTALLED_APPS`` setting, and your template will be used instead
 of the default.
@@ -137,7 +151,7 @@ to the project.
 Configuration
 -------------
 
-There are three mandatory environment settings (following the 
+There are three mandatory environment settings (following the
 `12-factor app <http://12factor.net/>`_ principle):
 
 * TRELLO_API_KEY
@@ -163,8 +177,22 @@ will check Trello for any existing webhooks registered with those tokens.)
 Tests
 -----
 
-Ahem, there aren't any at the moment. 0% coverage, use at your own risk.
-(I will get round to it at some point.)
+You can run the tests yourself in the normal manner:
+
+.. code:: shell
+
+    $ python manage.py test
+
+However, if you have ``tox`` installed (and I'd really recommend you do),
+then you can simply run ``$ tox``, and this will also include coverage.
+
+Coverage isn't 100% (when is it), but if you do contribute please do include
+tests for any changes that you make.
+
+The tests themselves use mock objects to replicate the two Trello API calls
+(``list_hooks`` and ``create_hook``), so no internet access is required. (The
+project relies on `py-trello <https://github.com/sarumont/py-trello>`_, and
+that has coverage for the API calls.)
 
 Setup
 -----
@@ -172,7 +200,7 @@ Setup
 The app is available on PyPI as ``django-trello-webhooks``, so install with ``pip``:
 
 .. code:: shell
-    
+
     $ pip install django-trello-webhooks
 
 Further Developments
@@ -205,7 +233,6 @@ from Richard Kolkovich (@sarumont), so thanks to him for that. He naturally
 relies on `requests <http://docs.python-requests.org/en/latest/>`_ from Kenneth Reitz,
 as well as `request-oauthlib <https://requests-oauthlib.readthedocs.org/en/latest/>`_, so
 thanks to anyone involved with either of those.
-
 
 Addenda
 -------
