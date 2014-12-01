@@ -173,8 +173,13 @@ class WebhookModelTests(TestCase):
         w._pull()
         self.assertEqual(w.trello_id, "")
 
-        # set up a fake remote hook with a matching id
-        h = trello.TrelloClient.add_hook(id_model="TEST1", hook_id="TEST2", desc="TEST3")
+        # set up a fake remote hook with a matching id and url
+        h = trello.TrelloClient.add_hook(
+            id_model="TEST1",
+            hook_id="TEST2",
+            desc="TEST3",
+            callback_url=w.callback_url
+        )
         # now we do have a matching remote
         self.assertIsNotNone(w._fetch())
         # so we should update the id and description when we pull
@@ -191,6 +196,15 @@ class WebhookModelTests(TestCase):
         w._pull()
         self.assertEqual(w.description, "TEST4")
         self.assertNotEqual(w.description, h.desc)
+
+        # and if the url doesn't match we shouldn't update
+        h.callback_url = "www.example.com"
+        self.assertIsNotNone(w._fetch())
+        # so we should update the id and description when we pull
+        self.assertNotEqual(w.callback_url, h.callback_url)
+        w._pull()
+        self.assertNotEqual(w.trello_id, h.id)
+        self.assertEqual(w.trello_id, "INVALID")
 
         # confirm that the local object hasn't been saved
         self.assertIsNone(w.id)
@@ -224,7 +238,12 @@ class WebhookModelTests(TestCase):
         self.assertEqual(w.trello_id, "KO")
 
         # add a remote that looks like the existing w
-        h = trello.TrelloClient.add_hook(id_model="OK", hook_id="TEST2", desc="TEST3")
+        h = trello.TrelloClient.add_hook(
+            id_model="OK",
+            hook_id="TEST2",
+            desc="TEST3",
+            callback_url=w.callback_url
+        )
         w.sync(save=False)
         self.assertEqual(w.trello_id, h.id)
 

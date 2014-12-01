@@ -155,9 +155,20 @@ class Webhook(models.Model):
         if hook is None:
             self.trello_id = ''
         else:
-            self.trello_id = hook.id
-            if self.description == "":
-                self.description = hook.desc
+            if self.callback_url == hook.callback_url:
+                self.trello_id = hook.id
+                # only overwrite local description if it's blank
+                if self.description == "":
+                    self.description = hook.desc
+            else:
+                # set the trello_id to something, so that it can be
+                # deleted, but use a common sentinel value.
+                self.trello_id = "INVALID"
+                logger.warning(
+                    u"Remote callback url mismatch. Updating remote webhooks "
+                    "is not currently supported. Please delete webhook '%s' "
+                    "and re-create.", self
+                )
         return self
 
     def _push(self):
