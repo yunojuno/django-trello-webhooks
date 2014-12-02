@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 
 from django.conf import settings
@@ -33,19 +34,28 @@ class CallbackEventAdmin(admin.ModelAdmin):
         'timestamp',
         'webhook',
         'event_type',
-        'event_payload',
+        'payload_',
         'rendered'
     )
     readonly_fields = (
         'timestamp',
         'webhook',
         'event_type',
-        'event_payload',
+        'payload_',
         'rendered'
     )
 
     def webhook_(self, instance):
         return instance.webhook.id
+
+    def payload_(self, instance):
+        pretty = json.dumps(
+            instance.event_payload,
+            sort_keys=True,
+            indent=4,
+            separators=(',', ': ')
+        )
+        return pretty.replace(" ", "&nbsp;")
 
     def rendered(self, instance):
         return instance.render()
