@@ -333,26 +333,26 @@ class CallbackEventModelTest(TestCase):
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card, ce.event_payload['action']['data']['card'])
 
-    def test_member_(self):
+    def test_member_name(self):
         ce = CallbackEvent()
-        self.assertEqual(ce.member_, None)
+        self.assertEqual(ce.member_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.member_, ce.event_payload['action']['memberCreator']['fullName'])  # noqa
+        self.assertEqual(ce.member_name, ce.event_payload['action']['memberCreator']['fullName'])  # noqa
 
-    def test_board_(self):
+    def test_board_name(self):
         ce = CallbackEvent()
-        self.assertEqual(ce.board_, None)
+        self.assertEqual(ce.board_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.board_, ce.event_payload['action']['data']['board']['name'])  # noqa
+        self.assertEqual(ce.board_name, ce.event_payload['action']['data']['board']['name'])  # noqa
 
-    def test_list_(self):
+    def test_list_name(self):
         ce = CallbackEvent()
-        self.assertEqual(ce.list_, None)
+        self.assertEqual(ce.list_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.list_, ce.event_payload['action']['data']['list']['name'])  # noqa
+        self.assertEqual(ce.list_name, ce.event_payload['action']['data']['list']['name'])  # noqa
 
-    def test_card_(self):
+    def test_card_name(self):
         ce = CallbackEvent()
-        self.assertEqual(ce.card_, None)
+        self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.card_, ce.event_payload['action']['data']['card']['name'])  # noqa
+        self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa

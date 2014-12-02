@@ -286,22 +286,22 @@ class CallbackEvent(models.Model):
         return self.action_data.get('card') if self.action_data else None
 
     @property
-    def member_(self):
+    def member_name(self):
         """Return member name if it exists (used in admin)."""
         return self.member.get('fullName') if self.member else None
 
     @property
-    def board_(self):
+    def board_name(self):
         """Return board name if it exists (used in admin)."""
         return self.board.get('name') if self.board else None
 
     @property
-    def list_(self):
+    def list_name(self):
         """Return list name if it exists (used in admin)."""
         return self.list.get('name') if self.list else None
 
     @property
-    def card_(self):
+    def card_name(self):
         """Return card name if it exists (used in admin)."""
         return self.card.get('name') if self.card else None
 

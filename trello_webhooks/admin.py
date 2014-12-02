@@ -7,6 +7,8 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import date as date_format
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+from django.template.defaultfilters import truncatewords, truncatechars
 
 from trello_webhooks.models import Webhook, CallbackEvent
 from trello_webhooks.forms import WebhookForm
@@ -21,7 +23,7 @@ class CallbackEventAdmin(admin.ModelAdmin):
         'webhook_',
         'event_type',
         'has_template',
-        'member_',
+        'member_name',
         'board_',
         'list_',
         'card_',
@@ -34,28 +36,44 @@ class CallbackEventAdmin(admin.ModelAdmin):
         'timestamp',
         'webhook',
         'event_type',
+        'rendered',
         'payload_',
-        'rendered'
     )
     readonly_fields = (
         'timestamp',
         'webhook',
         'event_type',
+        'rendered',
         'payload_',
-        'rendered'
     )
 
     def webhook_(self, instance):
         return instance.webhook.id
 
     def payload_(self, instance):
+        """Returns a prettier version of the payload.
+
+        Take the event_payload JSON, indent it, order the keys and then
+        present it as a <code> block. That's about as good as we can get
+        until someone builds a custom syntax function.
+
+        """
         pretty = json.dumps(
             instance.event_payload,
             sort_keys=True,
             indent=4,
             separators=(',', ': ')
         )
-        return pretty.replace(" ", "&nbsp;")
+        return mark_safe("<code>%s</code>" % pretty.replace(" ", "&nbsp;"))
+
+    def board_(self, instance):
+        return truncatewords(instance.board_name, 3)
+
+    def list_(self, instance):
+        return truncatewords(instance.list_name, 3)
+
+    def card_(self, instance):
+        return truncatewords(instance.card_name, 3)
 
     def rendered(self, instance):
         return instance.render()
@@ -77,9 +95,9 @@ class CallbackEventInline(admin.StackedInline):
         'timestamp_',
         'event_type',
         'action_taken_by',
-        'board_',
-        'list_',
-        'card_',
+        'board_name',
+        'list_name',
+        'card_name',
         'rendered'
     )
     ordering = ('-id',)
