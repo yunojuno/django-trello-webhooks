@@ -153,7 +153,6 @@ class Webhook(models.Model):
         # so we can still reference self.
         # https://docs.djangoproject.com/en/1.7/ref/models/instances/#django.db.models.Model.delete  # noqa
         if self.has_trello_id:
-            print "delete"
             self._delete_remote()
         super(Webhook, self).delete(*args, **kwargs)
         return self
