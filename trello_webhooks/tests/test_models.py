@@ -17,73 +17,47 @@ from trello_webhooks.settings import (
 from trello_webhooks.tests import get_sample_data
 
 
-class MockTrelloClient(object):
-    """Mock the TrelloClient object to return deterministic output.
+def mock_trello_sync(webhook, verb):
+    """Fake version of the Webhook._trello_sync method.
 
-    The two methods that are used in the app are `create_hook` and
-    `list_hooks`. In order to force a deterministic output from these
-    we use a class attr, `hooks`, which is a list that is returned
-    from the `list_hooks` method.
+    This mock requires no direct connection to Trello, and is deterministic,
+    so that it can be used in testing.
 
-    In order to force the output simply set the hooks attribute to
-    whatever you want to test against, and the `list_hooks` method will
-    return it.
+    It monkey-patches the Webhook object with the 'verb' kwarg, so that you
+    can validate that the expected method was called.
+
+    In addition it sets the trello_id property as per the real version.
 
     """
-
-    def __init__(self, *args, **kwargs):
-        pass
-
-    hooks = []
-
-    def list_hooks(self, token=None):
-        """Mock out the list_hooks method to return known hooks."""
-        return MockTrelloClient.hooks
-
-    def create_hook(self, callback_url, id_model, desc=None, token=None):
-        """Mock out the create_hook method to return fixed WebHook instance."""
-        # sentinel value - if id_model = "X" then return False to replicate a
-        # failed response from Trello
-        if id_model is False:
-            return False
-        return trello.WebHook(
-            self,
-            token,
-            id_model[::-1],
-            desc,
-            id_model,
-            callback_url,
-            True
-        )
-
-    @classmethod
-    def add_hook(
-        cls, client=None, token=None, hook_id=None,
-        desc=None, id_model=None, callback_url=None, active=True):
-        # adds a WebHook with known properties to the internal collection
-        h = trello.WebHook(
-            client or MockTrelloClient(),
-            token=token,
-            hook_id=hook_id,
-            desc=desc,
-            id_model=id_model,
-            callback_url=callback_url,
-            active=active
-        )
-        cls.hooks.append(h)
-        return h
+    webhook.verb = verb
+    if verb == 'POST':
+        webhook.trello_id = 'NEW_TRELLO_ID'
+    elif verb == 'DELETE':
+        webhook.trello_id = ''
+    return webhook
 
 
 class WebhookModelTests(TestCase):
 
-    def setUp(self):
-        # clear out the hooks collection on each test
-        MockTrelloClient.hooks = []
+    def test_default_properties(self):
+        hook = Webhook()
+        self.assertEqual(hook.id, None)
+        self.assertEqual(hook.trello_model_id, '')
+        self.assertEqual(hook.trello_id, '')
+        self.assertEqual(hook.description, '')
+        self.assertEqual(hook.created_at, None)
+        self.assertEqual(hook.last_updated_at, None)
+        self.assertEqual(hook.auth_token, '')
+        self.assertIsNone(hook.is_active)
 
     def test_str_repr(self):
         hook = Webhook(trello_id='A', trello_model_id='B', auth_token='C')
         self.assertEqual(
             str(hook),
+            u"Webhook: %s" % (hook.callback_url)
+        )
+        self.assertEqual(
+            unicode(hook),
             u"Webhook: %s" % (hook.callback_url)
         )
         self.assertEqual(
@@ -98,177 +72,13 @@ class WebhookModelTests(TestCase):
             u"Webhook %i: %s" % (hook.id, hook.callback_url)
         )
         self.assertEqual(
+            unicode(hook),
+            u"Webhook %i: %s" % (hook.id, hook.callback_url)
+        )
+        self.assertEqual(
             repr(hook),
             u"<Webhook id=%s, trello_id='%s', model='%s'>" %
             (hook.id, hook.trello_id, hook.trello_model_id)
-        )
-
-    def test_default_properties(self):
-        hook = Webhook()
-        self.assertEqual(hook.id, None)
-        self.assertEqual(hook.trello_model_id, '')
-        self.assertEqual(hook.trello_id, '')
-        self.assertEqual(hook.description, '')
-        self.assertEqual(hook.created_at, None)
-        self.assertEqual(hook.last_updated_at, None)
-        self.assertEqual(hook.auth_token, '')
-
-    def test_save_no_sync(self):
-        # Check that save updates the timestamps
-        self.assertEqual(Webhook.objects.count(), 0)
-        hook = Webhook().save(sync=False)
-        self.assertEqual(Webhook.objects.count(), 1)
-        self.assertIsNotNone(hook.id)
-        self.assertEqual(hook.trello_model_id, '')
-        self.assertEqual(hook.trello_id, '')
-        self.assertEqual(hook.description, '')
-        self.assertIsInstance(hook.created_at, datetime.datetime)
-        self.assertEqual(hook.last_updated_at, hook.last_updated_at)
-        self.assertEqual(hook.auth_token, '')
-        timestamp = hook.created_at
-
-        # and that saving again updates the last_updated_at
-        hook.save(sync=False)
-        self.assertEqual(hook.created_at, timestamp)
-        self.assertNotEqual(hook.last_updated_at, timestamp)
-
-    def test_delete(self):
-        self.assertEqual(Webhook.objects.count(), 0)
-        hook = Webhook().save(sync=False)
-        self.assertEqual(Webhook.objects.count(), 1)
-        hook.delete()
-        self.assertEqual(Webhook.objects.count(), 0)
-
-    def test__client(self):
-        # should fail without a token
-        w = Webhook()
-        self.assertRaises(AssertionError, w.get_client)
-        # give it a token and should now get back a TrelloClient
-        w.auth_token = 'X'
-        client = w.get_client()
-        self.assertEqual(client.api_key, TRELLO_API_KEY)
-        self.assertEqual(client.api_secret, TRELLO_API_SECRET)
-        self.assertEqual(client.resource_owner_key, w.auth_token)
-        self.assertEqual(client.resource_owner_secret, None)
-
-    @mock.patch('trello.TrelloClient', MockTrelloClient)
-    def test__fetch(self):
-        # no remote hooks, no match
-        w = Webhook(auth_token="TOKEN")
-        self.assertIsNone(w._fetch())
-        # add a hook, but still no match as no model_id
-        h = trello.TrelloClient.add_hook(id_model="TEST1")
-        self.assertIsNone(w._fetch())
-        # update w to match the model id
-        w.trello_model_id = h.id_model
-        self.assertIsNotNone(w._fetch())
-        self.assertEqual(w._fetch(), h)
-
-    @mock.patch('trello.TrelloClient', MockTrelloClient)
-    def test__pull(self):
-        # if there is no match, then clear out the local trello_id
-        w = Webhook(auth_token="TOKEN", trello_model_id="TEST1", trello_id="TEST3")
-        self.assertEqual(w.trello_id, "TEST3")
-        self.assertIsNone(w._fetch())
-        w._pull()
-        self.assertEqual(w.trello_id, "")
-
-        # set up a fake remote hook with a matching id and url
-        h = trello.TrelloClient.add_hook(
-            id_model="TEST1",
-            hook_id="TEST2",
-            desc="TEST3",
-            callback_url=w.callback_url
-        )
-        # now we do have a matching remote
-        self.assertIsNotNone(w._fetch())
-        # so we should update the id and description when we pull
-        self.assertNotEqual(w.trello_id, h.id)
-        self.assertEqual(w.description, "")
-        self.assertNotEqual(w.description, h.desc)
-        w._pull()
-        self.assertEqual(w.trello_id, h.id)
-        self.assertEqual(w.description, h.desc)
-
-        # however, if we have an existing description, we should _not_ overwrite
-        w.description = "TEST4"
-        self.assertNotEqual(w.description, h.desc)
-        w._pull()
-        self.assertEqual(w.description, "TEST4")
-        self.assertNotEqual(w.description, h.desc)
-
-        # and if the url doesn't match we shouldn't update
-        h.callback_url = "www.example.com"
-        self.assertIsNotNone(w._fetch())
-        # so we should update the id and description when we pull
-        self.assertNotEqual(w.callback_url, h.callback_url)
-        w._pull()
-        self.assertNotEqual(w.trello_id, h.id)
-        self.assertEqual(w.trello_id, "INVALID")
-
-        # confirm that the local object hasn't been saved
-        self.assertIsNone(w.id)
-
-    @mock.patch('trello.TrelloClient', MockTrelloClient)
-    def test__push(self):
-        # test with the False sentinel value, which means that the trello_id
-        # should be removed
-        w = Webhook(auth_token="TOKEN", trello_id="TEST1", trello_model_id=False)
-        self.assertTrue(w.has_trello_id)
-        w._push()
-        self.assertFalse(w.has_trello_id)
-
-        # now pass in a valid id and check that the trello_id is set
-        w = Webhook(auth_token="TOKEN", trello_id="TEST1", trello_model_id="OK")
-        self.assertTrue(w.has_trello_id)
-        w._push()
-        self.assertEqual(w.trello_id, "KO")
-        self.assertTrue(w.has_trello_id)
-
-    @mock.patch('trello.TrelloClient', MockTrelloClient)
-    def test_sync_true(self):
-        # self.fail('Write me')
-        pass
-
-    @mock.patch('trello.TrelloClient', MockTrelloClient)
-    def test_sync_false(self):
-        # if there is no trello_id, then a sync should update it
-        w = Webhook(auth_token="TOKEN", trello_model_id="OK")
-        w.sync(save=False)
-        self.assertEqual(w.trello_id, "KO")
-
-        # add a remote that looks like the existing w
-        h = trello.TrelloClient.add_hook(
-            id_model="OK",
-            hook_id="TEST2",
-            desc="TEST3",
-            callback_url=w.callback_url
-        )
-        w.sync(save=False)
-        self.assertEqual(w.trello_id, h.id)
-
-    def test__touch(self):
-        hook = Webhook().save(sync=False)
-        self.assertTrue(hook.created_at == hook.last_updated_at)
-        hook._touch()
-        self.assertTrue(hook.last_updated_at > hook.created_at)
-
-    def test_add_callback(self):
-        hook = Webhook().save(sync=False)
-        payload = get_sample_data('commentCard', 'json')
-        event = hook.add_callback(json.dumps(payload))
-        self.assertEqual(event.webhook, hook)
-        self.assertEqual(event.event_payload, payload)
-        # other CallbackEvent properties are tested in CallbackEvent tests
-
-    def test_callback_url(self):
-        hook = Webhook(
-            trello_model_id="M",
-            auth_token="A",
-        ).save(sync=False)
-        self.assertEqual(
-            hook.callback_url,
-            CALLBACK_DOMAIN + hook.get_absolute_url()
         )
 
     def test_get_absolute_url(self):
@@ -293,6 +103,137 @@ class WebhookModelTests(TestCase):
         self.assertFalse(hook.has_trello_id)
         hook.trello_id = '1'
         self.assertTrue(hook.has_trello_id)
+
+    def test_callback_url(self):
+        hook = Webhook(
+            trello_model_id="M",
+            auth_token="A",
+        ).save(sync=False)
+        self.assertEqual(
+            hook.callback_url,
+            CALLBACK_DOMAIN + hook.get_absolute_url()
+        )
+
+    def test_trello_url(self):
+        w = Webhook()
+        self.assertEqual(w.trello_url, '/webhooks/')
+        w.id = 1
+        self.assertEqual(w.trello_url, '/webhooks/')
+        w.id = None
+        self.assertEqual(w.trello_url, '/webhooks/')
+
+    def test_get_client(self):
+        # should fail without a token
+        w = Webhook()
+        self.assertRaises(AssertionError, w.get_client)
+        # give it a token and should now get back a TrelloClient
+        w.auth_token = 'X'
+        client = w.get_client()
+        self.assertEqual(client.api_key, TRELLO_API_KEY)
+        self.assertEqual(client.api_secret, TRELLO_API_SECRET)
+        self.assertEqual(client.resource_owner_key, w.auth_token)
+        self.assertEqual(client.resource_owner_secret, None)
+
+    def test_post_args(self):
+        w = Webhook(
+            auth_token="X",
+            description="Foo-Bar",
+            trello_model_id="123"
+        )
+        self.assertEqual(
+            w.post_args(),
+            {
+                'callbackURL': w.callback_url,
+                'description': w.description,
+                'idModel': w.trello_model_id
+            }
+        )
+
+    def test_touch(self):
+        hook = Webhook().save(sync=False)
+        self.assertTrue(hook.created_at == hook.last_updated_at)
+        hook.touch()
+        self.assertTrue(hook.last_updated_at > hook.created_at)
+
+    def test_save_no_sync(self):
+        # Check that save updates the timestamps
+        self.assertEqual(Webhook.objects.count(), 0)
+        hook = Webhook().save(sync=False)
+        self.assertEqual(Webhook.objects.count(), 1)
+        self.assertIsNotNone(hook.id)
+        self.assertEqual(hook.trello_model_id, '')
+        self.assertEqual(hook.trello_id, '')
+        self.assertEqual(hook.description, '')
+        self.assertIsInstance(hook.created_at, datetime.datetime)
+        self.assertEqual(hook.last_updated_at, hook.last_updated_at)
+        self.assertEqual(hook.auth_token, '')
+        timestamp = hook.created_at
+        # and that saving again updates the last_updated_at
+        hook.save(sync=False)
+        self.assertEqual(hook.created_at, timestamp)
+        self.assertNotEqual(hook.last_updated_at, timestamp)
+
+    @mock.patch('trello_webhooks.models.Webhook._trello_sync', mock_trello_sync)
+    def test_save_sync(self):
+        # now try without syncing - should have no verb
+        hook = Webhook()
+        self.assertFalse(hasattr(hook, 'verb'))
+        hook.save()
+        self.assertEqual(hook.verb, 'POST')
+        self.assertEqual(hook.trello_id, 'NEW_TRELLO_ID')
+        # validate that an existing id is unchanged,
+        hook.trello_id = 'OLD_TRELLO_ID'
+        hook.save()
+        self.assertEqual(hook.verb, 'PUT')
+        self.assertEqual(hook.trello_id, 'OLD_TRELLO_ID')
+
+    def test_delete(self):
+        self.assertEqual(Webhook.objects.count(), 0)
+        hook = Webhook().save(sync=False)
+        self.assertEqual(Webhook.objects.count(), 1)
+        hook.delete()
+        self.assertEqual(Webhook.objects.count(), 0)
+
+    @mock.patch('trello_webhooks.models.Webhook._trello_sync', mock_trello_sync)
+    def test__update_remote(self):
+        w = Webhook()
+        # no trello_id, no update
+        self.assertRaises(AssertionError, w._update_remote)
+        w.trello_id = "123"
+        w._update_remote()
+        self.assertEqual(w.verb, 'PUT')
+
+    @mock.patch('trello_webhooks.models.Webhook._trello_sync', mock_trello_sync)
+    def test__create_remote(self):
+        w = Webhook()
+        w._create_remote()
+        self.assertEqual(w.verb, 'POST')
+        w.trello_id = "123"
+        self.assertRaises(AssertionError, w._create_remote)
+
+    @mock.patch('trello_webhooks.models.Webhook._trello_sync', mock_trello_sync)
+    def test__delete_remote(self):
+        w = Webhook()
+        # no trello_id, no update
+        self.assertRaises(AssertionError, w._delete_remote)
+        w.trello_id = "123"
+        w._delete_remote()
+        self.assertEqual(w.verb, 'DELETE')
+
+    @mock.patch('trello_webhooks.models.Webhook._trello_sync', mock_trello_sync)
+    def test_sync(self):
+        w = Webhook()
+        self.assertEqual(w.sync().verb, 'POST')
+        w.trello_id = "123"
+        self.assertEqual(w.sync().verb, 'PUT')
+
+    def test_add_callback(self):
+        hook = Webhook().save(sync=False)
+        payload = get_sample_data('commentCard', 'json')
+        event = hook.add_callback(json.dumps(payload))
+        self.assertEqual(event.webhook, hook)
+        self.assertEqual(event.event_payload, payload)
+        # other CallbackEvent properties are tested in CallbackEvent tests
 
 
 class CallbackEventModelTest(TestCase):

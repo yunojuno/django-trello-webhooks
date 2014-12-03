@@ -25,6 +25,23 @@ def get_trello_client(api_key=settings.TRELLO_API_KEY,
     return trello.TrelloClient(api_key, api_secret=api_secret, token=token)
 
 
+class TrelloWebhookManager(object):
+    """Model manager used to interact with Trello API."""
+
+    def __init__(self):
+        self.client = get_trello_client()
+
+    def list_hooks(self, auth_token):
+        """Return all the hooks registered on Trello for a given auth_token.
+
+        Args:
+            auth_token: string, a valid user auth token, stored on a WebHook
+                model as Webhook.auth_token
+
+        """
+        return self.client.list_hooks(token=auth_token)
+
+
 class Webhook(models.Model):
     """Represents a single Trello API webhook."""
     trello_model_id = models.CharField(
@@ -35,6 +52,7 @@ class Webhook(models.Model):
         max_length=24,
         help_text=u"Webhook id returned from Trello API.",
         blank=True,
+        # unique=True
     )
     # something to remember this by, e.g. "Current board updates"
     description = models.CharField(
@@ -47,11 +65,15 @@ class Webhook(models.Model):
         max_length=64,
         help_text=u"The Trello API user auth token."
     )
+    # mark whether active or not - linked to whether Trello knows what it is.
+    is_active = models.NullBooleanField(default=None)
     created_at = models.DateTimeField(blank=True)
     last_updated_at = models.DateTimeField(blank=True)
 
     # this reflects the reality of the Trello API
     unique_together = ('trello_model_id', 'auth_token')
+
+    remote_objects = TrelloWebhookManager()
 
     def __unicode__(self):
         if self.id:
@@ -87,10 +109,28 @@ class Webhook(models.Model):
         """The callback_url used by Trello."""
         return settings.CALLBACK_DOMAIN + self.get_absolute_url()
 
+    @property
+    def trello_url(self):
+        """The API prefix used to call Trello."""
+        return '/webhooks/%s' % self.trello_id
+
     def get_client(self):
         """Return a TrelloClient with the instance token."""
         assert self.auth_token != '', "Missing auth_token."
         return get_trello_client(token=self.auth_token)
+
+    def post_args(self):
+        """Return properties as dict using Trello property names."""
+        return {
+            'callbackURL': self.callback_url,
+            'description': self.description,
+            'idModel': self.trello_model_id,
+        }
+
+    def touch(self):
+        """Update last_updated_at timestamp only."""
+        self.last_updated_at = timezone.now()
+        return super(Webhook, self).save(update_fields=['last_updated_at'])
 
     def save(self, *args, **kwargs):
         """Update timestamps, and sync with Trello on first save.
@@ -99,10 +139,9 @@ class Webhook(models.Model):
         with Trello, unless the 'sync' kwarg is passed in and False.
 
         """
-        sync = kwargs.pop('sync', True)
-        if self.id is None and sync is True:
-            logger.debug(u"New Webhook (%r) - syncing with Trello", self)
-            self.sync(save=False)
+        # do not process side effects if we're doing a partial model update
+        if kwargs.pop('sync', True):
+            self.sync()
         self.last_updated_at = timezone.now()
         self.created_at = self.created_at or self.last_updated_at
         super(Webhook, self).save(*args, **kwargs)
@@ -110,117 +149,67 @@ class Webhook(models.Model):
 
     def delete(self, *args, **kwargs):
         """Delete the remote Trello webhook as well as the local instance."""
-        super(Webhook, self).delete(*args, **kwargs)
         # the underlying SQL row has been deleted, but the object still exists,
         # so we can still reference self.
         # https://docs.djangoproject.com/en/1.7/ref/models/instances/#django.db.models.Model.delete  # noqa
         if self.has_trello_id:
-            try:
-                # don't bother checking, just power on through
-                self._fetch().delete()
-                logger.debug(u"%r removed from Trello", self)
-            except AttributeError:
-                logger.warning(u"Unable to delete %r from Trello.", self)
-
-    def _fetch(self):
-        """Fetches the corresponding webhook from Trello API.
-
-        Returns a py-trello WebHook instance if one is found that matches,
-            else None.
-
-        """
-        for hook in self.get_client().list_hooks():
-            if hook.id_model == self.trello_model_id:
-                logger.debug(u"Found matching Trello webhook registered for %s", self.trello_model_id)  # noqa
-                return hook
-        logger.debug(u"No matching Trello webhook registered for %s", self.trello_model_id)
-        return None
-
-    def _pull(self):
-        """Fetch remote webhook and 'pull' it into local copy.
-
-        This method calls `_fetch` to get the remote webhook (if it exists),
-        and then pulls the Trello id into the instance.
-
-        If the existing description field is blank, and the remote one is not
-        then it will also update the description.
-
-        If no matching webhook is found, the local trello_id is cleared out -
-        this can be used to check whether a match was found.
-
-        Returns the updated object (unsaved)
-
-        """
-        hook = self._fetch()
-        if hook is None:
-            self.trello_id = ''
-        else:
-            if self.callback_url == hook.callback_url:
-                self.trello_id = hook.id
-                # only overwrite local description if it's blank
-                if self.description == "":
-                    self.description = hook.desc
-            else:
-                # set the trello_id to something, so that it can be
-                # deleted, but use a common sentinel value.
-                self.trello_id = "INVALID"
-                logger.warning(
-                    u"Remote callback url mismatch. Updating remote webhooks "
-                    "is not currently supported. Please delete webhook '%s' "
-                    "and re-create.", self
-                )
+            print "delete"
+            self._delete_remote()
+        super(Webhook, self).delete(*args, **kwargs)
         return self
 
-    def _push(self):
-        """Push local webhook to Trello.
-
-        This is a companion function to _pull, and is used to register a
-        new webhook with Trello. The local trello_id will be updated with
-        the new id if it is created.
-
-        NB This will poke Trello to immediately respond with a callback.
-
-        Returns the updated object (unsaved)
-
-        """
-        hook = self.get_client().create_hook(
-            callback_url=self.callback_url,
-            id_model=self.trello_model_id,
-            desc=self.description,
-        )
-        if hook is False:
-            self.trello_id = ''
-            logger.debug(u"Webhook (%r) deactivated as Trello API returned False.", self)
-        else:
-            self.trello_id = hook.id
-            logger.debug(u"Webhook (%r) registered successfuly with Trello API.", self)
+    def _trello_sync(self, verb):
+        """Calls Trello API, update from response JSON."""
+        try:
+            response = self.get_client().fetch_json(
+                self.trello_url,
+                http_method=verb,
+                post_args=self.post_args()
+            )
+            self.trello_id = response.get('id', '')
+            self.is_active = response.get('active', True) and self.has_trello_id
+        except trello.ResourceUnavailable, ex:
+            logger.warning(u"Error syncing webhook to trello: %s", ex)
+            # if we get a 404 then clear out the Trello Id
+            self.trello_id = '' if ex._status == 404 else self.trello_id
+            self.is_active = False
         return self
 
-    def _touch(self):
-        """Update last_updated_at timestamp."""
-        self.last_updated_at = timezone.now()
-        return self.save(update_fields=['last_updated_at'])
+    def _update_remote(self):
+        """Update the remote Trello entity."""
+        assert self.has_trello_id, "You cannot PUT to Trello without a trello_id."
+        return self._trello_sync('PUT')
 
-    def sync(self, save=True):
+    def _create_remote(self):
+        """Create a new remote Trello entity."""
+        assert not self.has_trello_id, "You cannot POST to Trello with a trello_id."
+        return self._trello_sync('POST')
+
+    def _delete_remote(self):
+        """Delete a new remote Trello entity."""
+        assert self.has_trello_id, "You cannot DELETE from Trello without a trello_id."
+        return self._trello_sync('DELETE')
+
+    def sync(self):
         """Synchronise webhook with Trello.
 
-        Calls _pull to see if there is an existing remote webhook, and
-        if not calls _push to create one. Saves the updated object (will
-        now have trello_id set).
+        If the object has a trello_id then we assume it's valid, and send
+        a PUT request to the API. If there is no trello_id then we assume
+        that it's new, and POST it.
 
-        Kwargs:
-            save: boolean (True), if False then do not save the object - useful
-                when called from within a save-related method / signal receiver.
+        Either call can fail - if we attempt to PUT to a trello_id that does
+        not in fact exist, or we attempt to POST a combination of (auth_token,
+        trello_model_id, callback_url) that already exists on Trello.
 
-        Returns the updated instance
+        Does not save the object, just updates the local trello_id property.
+        Saving the local object is the calling code's responsibility.
 
         """
-        self._pull()
-        if not self.has_trello_id:
-            self._push()
-        if save is True:
-            self.save()
-        return self
+        if self.has_trello_id:
+            # we have a Trello id, so PUT
+            return self._update_remote()
+        else:
+            return self._create_remote()
 
     def add_callback(self, body_text):
         """Add a new CallbackEvent instance and fire signal.
@@ -238,7 +227,7 @@ class Webhook(models.Model):
             event_type=action,
             event_payload=body_text
         ).save()
-        self._touch()
+        self.touch()
         signals.callback_received.send(sender=self.__class__, event=event)
         return event
 

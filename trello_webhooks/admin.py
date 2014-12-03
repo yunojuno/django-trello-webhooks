@@ -129,9 +129,11 @@ class WebhookAdmin(admin.ModelAdmin):
     # inlines = [CallbackEventInline]
 
     list_display = (
+        'auth_token_',
         'description',
         'trello_model_id',
-        'has_trello_id',
+        'trello_id',
+        'is_active',
         'created_at',
         'last_updated_at',
     )
@@ -141,6 +143,9 @@ class WebhookAdmin(admin.ModelAdmin):
         'last_updated_at',
     )
     form = WebhookForm
+
+    def auth_token_(self, instance):
+        return truncatechars(instance.auth_token, 12)
 
     def sync(self, request, queryset):
         """Sync objects selected to Trello."""
