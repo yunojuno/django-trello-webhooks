@@ -8,11 +8,12 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name="django-trello-webhooks",
-    version="0.2",
+    version="0.3",
     packages=[
         'trello_webhooks',
         'trello_webhooks.management',
         'trello_webhooks.management.commands',
+        'trello_webhooks.migrations',
         'trello_webhooks.templatetags',
         'trello_webhooks.tests',
     ],
