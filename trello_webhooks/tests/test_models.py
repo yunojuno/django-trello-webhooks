@@ -32,8 +32,23 @@ def mock_trello_sync(webhook, verb):
     webhook.verb = verb
     if verb == 'POST':
         webhook.trello_id = 'NEW_TRELLO_ID'
+        webhook.is_active = True
     elif verb == 'DELETE':
         webhook.trello_id = ''
+        webhook.is_active = False
+    return webhook
+
+
+def mock_trello_sync_x(webhook, verb):
+    """Fake version of the Webhook._trello_sync method that mimics failure.
+
+    This function mimics the result of _trello_sync if Trello responds with
+    something other than a 200.
+
+    """
+    webhook = mock_trello_sync(webhook, verb)
+    webhook.trello_id = ''
+    webhook.is_active = False
     return webhook
 
 
@@ -207,7 +222,9 @@ class WebhookModelTests(TestCase):
     def test__create_remote(self):
         w = Webhook()
         w._create_remote()
+        self.assertTrue(w.is_active)
         self.assertEqual(w.verb, 'POST')
+        self.assertEqual(w.trello_id, 'NEW_TRELLO_ID')
         w.trello_id = "123"
         self.assertRaises(AssertionError, w._create_remote)
 
@@ -219,6 +236,7 @@ class WebhookModelTests(TestCase):
         w.trello_id = "123"
         w._delete_remote()
         self.assertEqual(w.verb, 'DELETE')
+        self.assertEqual(w.trello_id, '')
 
     @mock.patch('trello_webhooks.models.Webhook._trello_sync', mock_trello_sync)
     def test_sync(self):
