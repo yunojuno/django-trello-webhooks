@@ -1,3 +1,1 @@
-<strong>{{action.memberCreator.initials}}</strong> updated the card "<strong>{{action.data.card.name}}</strong>":
-{% include 'trello_webhooks/partials/update_values_list.html' with new=action.data.card %}
-{% include 'trello_webhooks/partials/card_link.html' %}
+{% if action.data.listBefore and action.data.listAfter %}{% include 'trello_webhooks/partials/updateCard_moveList.html' %}{% elif 'closed' in action.data.old %}{% include 'trello_webhooks/partials/updateCard_close.html' %}{% elif 'pos' in action.data.old %}{% include 'trello_webhooks/partials/updateCard_changePosition.html' %}{% else %}<strong>{{action.memberCreator.initials}}</strong> updated the card "<strong>{{action.data.card.name}}</strong>":{% include 'trello_webhooks/partials/update_values_list.html' with new=action.data.card %}{% endif %}{% include 'trello_webhooks/partials/card_link.html' %}
