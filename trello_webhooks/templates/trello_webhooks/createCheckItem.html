@@ -1,1 +1,2 @@
-<b>{{action.memberCreator.fullName}}</b> created a new checklist item, "<b>{{action.data.checkItem.name}}</b>", on the checklist "<b>{{action.data.checklist.name}}</b>" on the card "<b>{{action.data.card.name}}</b>" on the board "<b>{{action.data.board.name}}</b>"
+<strong>{{action.memberCreator.initials}}</strong> added checklist item "<strong>{{action.data.checkItem.name}}</strong>"
+{% include 'trello_webhooks/partials/card_link.html' %}

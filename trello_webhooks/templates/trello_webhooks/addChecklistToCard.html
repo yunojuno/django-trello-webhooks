@@ -1,1 +1,2 @@
-<b>{{action.memberCreator.fullName}}</b> added checklist "<b>{{action.data.checklist.name}}</b>" to the card "<b>{{action.data.card.name}}</b>" on the board "<b>{{action.data.board.name}}</b>"
+<strong>{{action.memberCreator.initials}}</strong> added checklist "<strong>{{action.data.checklist.name}}</strong>"
+{% include 'trello_webhooks/partials/card_link.html' %}

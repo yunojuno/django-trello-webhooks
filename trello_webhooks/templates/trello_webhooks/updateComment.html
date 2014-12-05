@@ -1,1 +1,2 @@
-<b>{{action.memberCreator.fullName}}</b> updated their comment on the card "<b>{{action.data.card.name}}</b>" on the board "<b>{{action.data.board.name}}</b>" from <blockquote>{{action.data.old.text}}</blockquote> to <blockquote>{{action.data.action.text}}</blockquote>
+<strong>{{action.memberCreator.initials}}</strong> updated their comment from <blockquote>{{action.data.old.text}}</blockquote> to <blockquote>{{action.data.action.text}}</blockquote>
+{% include 'trello_webhooks/partials/card_link.html' %}

@@ -24,7 +24,7 @@ HIPCHAT_API_TOKEN = environ.get('HIPCHAT_API_TOKEN', None)
 HIPCHAT_ROOM_ID = environ.get('HIPCHAT_ROOM_ID', None)
 HIPCHAT_ENABLED = HIPCHAT_API_TOKEN and HIPCHAT_ROOM_ID
 if HIPCHAT_ENABLED:
-    print u"HipChat integration is ENABLED"
+    print u"HipChat integration is ENABLED: %s" % HIPCHAT_ROOM_ID
 else:
     print u"HipChat integration is DISABLED"
 # ============= / APP SETTINGS ===================

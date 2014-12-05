@@ -1,1 +1,1 @@
-{% load trello_webhook_tags %}{% with new|trello_updates:old as updates %}<ul>{% for k,v in updates.iteritems %}<li><strong>{{k}}</strong> updated from "{{v.0}}" to {% if v.1 %}"{{v.1}}"{% else %}None{% endif %}</li>{% endfor %}</ul>{% endwith %}
+{% load trello_webhook_tags %}{% with new|trello_updates:action.data.old as updates %}<ul>{% for k,v in updates.iteritems %}<li><strong>{{k}}</strong> updated from "{{v.0}}" to {% if v.1 %}"{{v.1}}"{% else %}None{% endif %}</li>{% endfor %}</ul>{% endwith %}

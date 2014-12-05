@@ -34,11 +34,13 @@ def on_callback_received(sender, **kwargs):
     # as a normal notification, in 'yellow'
     # if no template exists, send a notification in 'red'
     event = kwargs.pop('event')
-    if event.event_type in get_supported_events():
-        if settings.HIPCHAT_ENABLED:
+    if settings.HIPCHAT_ENABLED:
+        logger.debug(
+            u"Message sent to HipChat: %s",
             send_to_hipchat(event.render())
-        else:
-            logger.info(
-                u"HipChat is DISABLED, logging message instead: '%s'",
-                event.render()
-            )
+        )
+    else:
+        logger.debug(
+            u"HipChat is DISABLED, logging message instead: '%s'",
+            event.render()
+        )

@@ -1,1 +1,2 @@
-<b>{{action.memberCreator.fullName}}</b> commented on the card "<b>{{action.data.card.name}}</b>" on the board "<b>{{action.data.board.name}}</b>": <blockquote>{{action.data.text}}</blockquote>
+<strong>{{action.memberCreator.initials}}</strong>: {{action.data.text}}
+{% include 'trello_webhooks/partials/card_link.html' %}
