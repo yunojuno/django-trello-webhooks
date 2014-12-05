@@ -242,6 +242,27 @@ class CallbackEvent(models.Model):
     # the complete request payload, as JSON
     event_payload = JSONField()
 
+    def __unicode__(self):
+        if self.id:
+            return (
+                "CallbackEvent %i: '%s' raised by webhook %s." %
+                (self.id, self.event_type, self.webhook.id)
+            )
+        else:
+            return (
+                "CallbackEvent: '%s' raised by webhook %s." %
+                (self.event_type, self.webhook.id)
+            )
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __repr__(self):
+        return (
+            u"<CallbackEvent id=%s, webhook=%s, event_type='%s'>" %
+            (self.id, self.webhook_id, self.event_type)
+        )
+
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
