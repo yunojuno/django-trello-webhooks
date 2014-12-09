@@ -1,7 +1,6 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
-import subprocess
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -24,7 +23,6 @@ def get_trello_client(api_key=settings.TRELLO_API_KEY,
                       api_secret=settings.TRELLO_API_SECRET,
                       token=None):  # noqa
     return trello.TrelloClient(api_key, api_secret=api_secret, token=token)
-
 
 
 class TrelloWebhookManager(object):
