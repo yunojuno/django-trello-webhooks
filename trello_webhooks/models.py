@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import subprocess
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -23,6 +24,7 @@ def get_trello_client(api_key=settings.TRELLO_API_KEY,
                       api_secret=settings.TRELLO_API_SECRET,
                       token=None):  # noqa
     return trello.TrelloClient(api_key, api_secret=api_secret, token=token)
+
 
 
 class TrelloWebhookManager(object):
@@ -266,6 +268,11 @@ class CallbackEvent(models.Model):
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+
+        """Add content-type metadata for addAttachmentToCard event"""
+        if self.event_type == 'addAttachmentToCard':
+            self._resolve_content_type()
+
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
@@ -318,6 +325,31 @@ class CallbackEvent(models.Model):
     def template(self):
         """Return full path to render template, based on event_type."""
         return 'trello_webhooks/%s.html' % self.event_type
+
+    def _resolve_content_type(self):
+        """Return attachment content-type if attachment exists / is valid.
+
+        We're going to simply use file extensions to decide what type the
+        attachment is, because the Trello API doesn't tell us, and better
+        methods for detecting ourselves either have external dependencies or
+        could block our thread with file I/O (especially as the file isn't
+        local to the system), and it's not critical in any case.
+
+        A hacky, but arguably better way to approach this would be simply
+        to detect whether the Trello API has given the attachment a 'previewURL'
+        attribute, as it seems to only do this with images. However, that's
+        undocumented and therefore we could end up trying to render PDFs or
+        other formats as an <img>.
+
+        A good list of approaches is here: http://stackoverflow.com/questions/6640605/detecting-if-a-file-is-an-image-in-python
+        although a good list of image extensions is harder to come by.
+        """
+        img_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.tiff', '.tif', '.bmp', '.webp', '.bpg', '.svg')
+
+        if any(self.action_data.get('attachment').get('name').endswith(ext) for ext in img_extensions):
+            self.action_data['attachment']['type'] = 'image'
+        elif self.action_data.get('attachment') is not None:
+            self.action_data['attachment']['type'] = None
 
     def render(self):
         """Render the event using an HTML template.
