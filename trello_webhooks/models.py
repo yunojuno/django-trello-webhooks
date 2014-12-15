@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import copy
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -272,7 +273,11 @@ class CallbackEvent(models.Model):
     @property
     def action_data(self):
         """Returns the 'data' node from the payload."""
-        return self.event_payload.get('action', {}).get('data')
+        # Avoid changing self.event_payload. Make a copy.
+        data = copy.deepcopy(self.event_payload.get('action', {}).get('data'))
+        if data and self.event_type == 'addAttachmentToCard':
+            data['content_type'] = data.get('attachment', {}).get('mimeType')
+        return data
 
     @property
     def member(self):
@@ -317,8 +322,7 @@ class CallbackEvent(models.Model):
     @property
     def attachment_mimetype(self):
         """Return attachment mimetype extracted from action data, if any."""
-        return (self.action_data.get('attachment', {}).get('mimeType')
-                if self.action_data else None)
+        return self.action_data.get('content_type') if self.action_data else None
 
     @property
     def template(self):

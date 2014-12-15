@@ -2,6 +2,7 @@
 import datetime
 import json
 import mock
+import copy
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -257,16 +258,37 @@ class WebhookModelTests(TestCase):
 class CallbackEventModelTest(TestCase):
 
     def test_default_properties(self):
-        pass
+        ce = CallbackEvent()
+        self.assertEqual(ce.timestamp, None)
+        self.assertEqual(ce.event_type, '')
+        self.assertEqual(ce.event_payload, {})
 
     def test_save(self):
-        pass
+        w = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=w)
+        self.assertIsNone(ce.timestamp)
+        ce.save()
+        self.assertIsNotNone(ce.timestamp)
 
     def test_action_data(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
+
+    def test_action_data_with_content_type(self):
+        self.maxDiff = None
+        ce = CallbackEvent()
+        ce.event_type='addAttachmentToCard'
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertNotEqual(ce.action_data, ce.event_payload['action']['data'])
+        self.assertEqual(
+            ce.action_data['content_type'],
+            ce.event_payload['action']['data']['attachment']['mimeType']
+        )
+        action_data = copy.deepcopy(ce.action_data)
+        action_data.pop('content_type', None)
+        self.assertEqual(action_data, ce.event_payload['action']['data'])
 
     def test_member(self):
         ce = CallbackEvent()
@@ -319,6 +341,7 @@ class CallbackEventModelTest(TestCase):
     def test_attachment_mimetype(self):
         ce = CallbackEvent()
         self.assertEqual(ce.attachment_mimetype, None)
+        ce.event_type = 'addAttachmentToCard'
         ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
         self.assertEqual(ce.attachment_mimetype, ce.event_payload['action']['data']['attachment']['mimeType'])  # noqa
