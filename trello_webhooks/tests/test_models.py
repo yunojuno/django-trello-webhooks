@@ -315,3 +315,10 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_attachment_mimetype(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.attachment_mimetype, None)
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+        self.assertEqual(ce.attachment_mimetype, ce.event_payload['action']['data']['attachment']['mimeType'])  # noqa

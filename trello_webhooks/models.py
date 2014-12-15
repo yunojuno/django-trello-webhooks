@@ -315,6 +315,12 @@ class CallbackEvent(models.Model):
         return self.card.get('name') if self.card else None
 
     @property
+    def attachment_mimetype(self):
+        """Return attachment mimetype extracted from action data, if any."""
+        return (self.action_data.get('attachment', {}).get('mimeType')
+                if self.action_data else None)
+
+    @property
     def template(self):
         """Return full path to render template, based on event_type."""
         return 'trello_webhooks/%s.html' % self.event_type
