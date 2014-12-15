@@ -2,7 +2,7 @@
 import datetime
 import json
 import mock
-import copy
+import responses
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -276,20 +276,6 @@ class CallbackEventModelTest(TestCase):
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
 
-    def test_action_data_with_content_type(self):
-        self.maxDiff = None
-        ce = CallbackEvent()
-        ce.event_type='addAttachmentToCard'
-        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
-        self.assertNotEqual(ce.action_data, ce.event_payload['action']['data'])
-        self.assertEqual(
-            ce.action_data['content_type'],
-            ce.event_payload['action']['data']['attachment']['mimeType']
-        )
-        action_data = copy.deepcopy(ce.action_data)
-        action_data.pop('content_type', None)
-        self.assertEqual(action_data, ce.event_payload['action']['data'])
-
     def test_member(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
@@ -338,10 +324,23 @@ class CallbackEventModelTest(TestCase):
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
 
-    def test_attachment_mimetype(self):
+    @responses.activate
+    def test_attachment_has_mimetype(self):
         ce = CallbackEvent()
-        self.assertEqual(ce.attachment_mimetype, None)
         ce.event_type = 'addAttachmentToCard'
         ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
-        self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
-        self.assertEqual(ce.attachment_mimetype, ce.event_payload['action']['data']['attachment']['mimeType'])  # noqa
+        self.assertIsNotNone(ce.event_payload['action']['data']['attachment']['mimeType'])  # noqa
+
+        # Remove mimetype from event_payload
+        ce.action_data['attachment'].pop('mimeType')
+        # Mock response
+        responses.add(
+            responses.HEAD,
+            ce.action_data['attachment']['url'],
+            body="", status=200, content_type="image/svg+xml")
+        # Fetch it again
+        ce._fetch_extra_info()
+        # Check it's been set correctly
+        self.assertEqual(
+            ce.action_data['attachment']['mimeType'],
+            "image/svg+xml")

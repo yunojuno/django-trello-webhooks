@@ -10,6 +10,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from jsonfield import JSONField
+import requests
 import trello
 
 from trello_webhooks import settings
@@ -24,6 +25,21 @@ def get_trello_client(api_key=settings.TRELLO_API_KEY,
                       api_secret=settings.TRELLO_API_SECRET,
                       token=None):  # noqa
     return trello.TrelloClient(api_key, api_secret=api_secret, token=token)
+
+
+def get_content_type(url):
+    """
+    Returns content type of a url resource.
+    In case of connection or request errors, log an exception and
+    returns None.
+
+    """
+    ctype = None
+    try:
+        ctype = requests.head(url).headers.get('content-type')
+    except requests.exceptions.RequestException:
+        logger.exception("Error sending a head request to %s", url)
+    return ctype
 
 
 class TrelloWebhookManager(object):
@@ -267,17 +283,28 @@ class CallbackEvent(models.Model):
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+        self._fetch_extra_info()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def _fetch_extra_info(self):
+        """Extend action_data, trying to add missing info not passed
+        in Trello request:
+
+        - try to set mimetype field on attachment if it's missing
+
+        """
+        if self.event_type == 'addAttachmentToCard':
+            # Assume if there's a KeyError, it must be thrown,
+            # being an inconsistency in the request.
+            attachment = self.event_payload['action']['data']['attachment']
+            if not attachment.get('mimeType'):
+                attachment['mimeType'] = get_content_type(attachment.get('url'))  #noqa
 
     @property
     def action_data(self):
         """Returns the 'data' node from the payload."""
-        # Avoid changing self.event_payload. Make a copy.
-        data = copy.deepcopy(self.event_payload.get('action', {}).get('data'))
-        if data and self.event_type == 'addAttachmentToCard':
-            data['content_type'] = data.get('attachment', {}).get('mimeType')
-        return data
+        return self.event_payload.get('action', {}).get('data')
 
     @property
     def member(self):
@@ -318,11 +345,6 @@ class CallbackEvent(models.Model):
     def card_name(self):
         """Return card name if it exists (used in admin)."""
         return self.card.get('name') if self.card else None
-
-    @property
-    def attachment_mimetype(self):
-        """Return attachment mimetype extracted from action data, if any."""
-        return self.action_data.get('content_type') if self.action_data else None
 
     @property
     def template(self):
