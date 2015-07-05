@@ -1,0 +1,75 @@
+{
+  "model": {
+    "id": "xxxx",
+    "name": "xxxx Board",
+    "desc": "",
+    "descData": null,
+    "closed": false,
+    "idOrganization": null,
+    "pinned": false,
+    "url": "https://trello.com/b/xxxx/xxxx-board",
+    "shortUrl": "https://trello.com/b/xxxx",
+    "prefs": {
+      "permissionLevel": "private",
+      "voting": "disabled",
+      "comments": "members",
+      "invitations": "members",
+      "selfJoin": false,
+      "cardCovers": true,
+      "calendarFeedEnabled": false,
+      "background": "blue",
+      "backgroundColor": "#0079BF",
+      "backgroundImage": null,
+      "backgroundImageScaled": null,
+      "backgroundTile": false,
+      "backgroundBrightness": "unknown",
+      "canBePublic": true,
+      "canBeOrg": true,
+      "canBePrivate": true,
+      "canInvite": true
+    },
+    "labelNames": {
+      "green": "",
+      "yellow": "",
+      "orange": "",
+      "red": "",
+      "purple": "",
+      "blue": "",
+      "sky": "",
+      "lime": "",
+      "pink": "",
+      "black": ""
+    }
+  },
+  "action": {
+    "id": "xxxx",
+    "idMemberCreator": "xxxx",
+    "data": {
+      "board": {
+        "shortLink": "eH5cY24Y",
+        "name": "xxxx Board",
+        "id": "xxxx"
+      },
+      "card": {
+        "shortLink": "xxxx",
+        "idShort": 7,
+        "name": "xxxx",
+        "id": "xxxx"
+      },
+      "attachment": {
+        "url": "https://trello-attachments.s3.amazonaws.com/53c7a86e9ada3f2f3ad4126c/53c7a86e9ada3f2f3ad41274/53058b5c39d5d3f26e8182f19378723a/test-attachment.rtf",
+        "name": "test-attachment.rtf",
+        "id": "xxxx"
+      }
+    },
+    "type": "addAttachmentToCard",
+    "date": "2015-07-03T15:35:36.062Z",
+    "memberCreator": {
+      "id": "xxxx",
+      "avatarHash": null,
+      "fullName": "xxxx",
+      "initials": "xxxx",
+      "username": "xxxx"
+    }
+  }
+}

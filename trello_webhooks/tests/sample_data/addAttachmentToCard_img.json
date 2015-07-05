@@ -1,0 +1,77 @@
+{
+  "model": {
+    "id": "xxxx",
+    "name": "xxxx Board",
+    "desc": "",
+    "descData": null,
+    "closed": false,
+    "idOrganization": null,
+    "pinned": false,
+    "url": "https://trello.com/b/xxxx/xxxx-board",
+    "shortUrl": "https://trello.com/b/xxxx",
+    "prefs": {
+      "permissionLevel": "private",
+      "voting": "disabled",
+      "comments": "members",
+      "invitations": "members",
+      "selfJoin": false,
+      "cardCovers": true,
+      "calendarFeedEnabled": false,
+      "background": "blue",
+      "backgroundColor": "#0079BF",
+      "backgroundImage": null,
+      "backgroundImageScaled": null,
+      "backgroundTile": false,
+      "backgroundBrightness": "unknown",
+      "canBePublic": true,
+      "canBeOrg": true,
+      "canBePrivate": true,
+      "canInvite": true
+    },
+    "labelNames": {
+      "green": "",
+      "yellow": "",
+      "orange": "",
+      "red": "",
+      "purple": "",
+      "blue": "",
+      "sky": "",
+      "lime": "",
+      "pink": "",
+      "black": ""
+    }
+  },
+  "action": {
+    "id": "xxxx",
+    "idMemberCreator": "xxxx",
+    "data": {
+      "board": {
+        "shortLink": "xxxx",
+        "name": "xxx Board",
+        "id": "xxxx"
+      },
+      "card": {
+        "shortLink": "xxxx",
+        "idShort": 7,
+        "name": "Invite your team to this board using the Add Members button",
+        "id": "xxxx"
+      },
+      "attachment": {
+        "previewUrl2x": "https://trello-attachments.s3.amazonaws.com/53c7a86e9ada3f2f3ad4127f/448x448/d75894643598fbfbad5134399d359d68/AAEAAQAAAAAAAAOGAAAAJDEzYzU5ODJkLTA4ZWYtNGFlMy1hNTM0LTgxNTc4NDJlZDAxYw.jpg",
+        "previewUrl": "https://trello-attachments.s3.amazonaws.com/53c7a86e9ada3f2f3ad4127f/448x448/d75894643598fbfbad5134399d359d68/AAEAAQAAAAAAAAOGAAAAJDEzYzU5ODJkLTA4ZWYtNGFlMy1hNTM0LTgxNTc4NDJlZDAxYw.jpg",
+        "url": "https://trello-attachments.s3.amazonaws.com/53c7a86e9ada3f2f3ad4127f/448x448/d75894643598fbfbad5134399d359d68/AAEAAQAAAAAAAAOGAAAAJDEzYzU5ODJkLTA4ZWYtNGFlMy1hNTM0LTgxNTc4NDJlZDAxYw.jpg",
+        "name": "xxxx.jpg",
+        "id": "xxxx"
+      }
+    },
+    "type": "addAttachmentToCard",
+    "date": "2015-07-03T15:35:36.062Z",
+    "memberCreator": {
+      "id": "xxxx",
+      "avatarHash": null,
+      "fullName": "xxxx",
+      "initials": "xxxx",
+      "username": "xxxx"
+    }
+  }
+}
