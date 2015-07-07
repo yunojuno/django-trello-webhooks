@@ -1,0 +1,80 @@
+{
+    "action": {
+        "data": {
+            "attachment": {
+                "id": "549029d1fb1ce0bfa8f05117",
+                "name": "2014-12-08 10.24.28.png",
+                "previewUrl": "https://trello-attachments.s3.amazonaws.com/5486d8cf77b945bc1a8cdf09/600x1067/47a03da431c1ea14414ed72f1ddc88e4/2014-12-08_10.24.28.png",
+                "previewUrl2x": "https://trello-attachments.s3.amazonaws.com/5486d8cf77b945bc1a8cdf09/720x1280/a3789e45dc3811855fec2f0c6de907f7/2014-12-08_10.24.28.png",
+                "url": "https://trello-attachments.s3.amazonaws.com/5486d8cf77b945bc1a8cdf09/720x1280/a3789e45dc3811855fec2f0c6de907f7/2014-12-08_10.24.28.png"
+            },
+            "board": {
+                "id": "5476fab52086e26047fa328c",
+                "name": "Django Trello Webhooks Test Board",
+                "shortLink": "TAAnwdP9"
+            },
+            "card": {
+                "id": "5486d8cf77b945bc1a8cdf09",
+                "idShort": 23,
+                "name": "this is new",
+                "shortLink": "JHdpHgyb"
+            }
+        },
+        "date": "2014-12-16T12:47:15.275Z",
+        "id": "549029d3fb1ce0bfa8f0511e",
+        "idMemberCreator": "4f55dc2f8e0358c24d194be0",
+        "memberCreator": {
+            "avatarHash": "852f1ba717618e2d0ba0c0a8de5eaad4",
+            "fullName": "Hugo Rodger-Brown",
+            "id": "4f55dc2f8e0358c24d194be0",
+            "initials": "HRB",
+            "username": "hrb"
+        },
+        "type": "addAttachmentToCard"
+    },
+    "model": {
+        "closed": false,
+        "desc": "",
+        "descData": null,
+        "id": "5476fab52086e26047fa328c",
+        "idOrganization": null,
+        "labelNames": {
+            "black": "",
+            "blue": "",
+            "green": "",
+            "lime": "",
+            "orange": "",
+            "pink": "",
+            "purple": "",
+            "red": "",
+            "sky": "",
+            "yellow": ""
+        },
+        "name": "Django Trello Webhooks Test Board",
+        "pinned": false,
+        "prefs": {
+            "background": "blue",
+            "backgroundBrightness": "unknown",
+            "backgroundColor": "#0079BF",
+            "backgroundImage": null,
+            "backgroundImageScaled": null,
+            "backgroundTile": false,
+            "calendarFeedEnabled": false,
+            "canBeOrg": true,
+            "canBePrivate": true,
+            "canBePublic": true,
+            "canInvite": true,
+            "cardAging": "regular",
+            "cardCovers": true,
+            "comments": "public",
+            "invitations": "members",
+            "permissionLevel": "public",
+            "selfJoin": false,
+            "voting": "disabled"
+        },
+        "shortUrl": "https://trello.com/b/TAAnwdP9",
+        "url": "https://trello.com/b/TAAnwdP9/django-trello-webhooks-test-board"
+    }
+}
+ 
+

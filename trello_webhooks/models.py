@@ -13,6 +13,7 @@ import trello
 
 from trello_webhooks import settings
 from trello_webhooks import signals
+from trello_webhooks import contenttypes
 
 logger = logging.getLogger(__name__)
 
@@ -266,13 +267,25 @@ class CallbackEvent(models.Model):
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+        self._merge_content_type()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def _merge_content_type(self):
+        attachment = self.attachment
+        if attachment:
+            attachment = contenttypes.merge_content_type(attachment)
+            self.event_payload['action']['data']['attachment'] = attachment
 
     @property
     def action_data(self):
         """Returns the 'data' node from the payload."""
         return self.event_payload.get('action', {}).get('data')
+
+    @property
+    def attachment(self):
+        """Returns the 'attachment' node from event_payload"""
+        return self.action_data.get('attachment') if self.action_data else None
 
     @property
     def member(self):

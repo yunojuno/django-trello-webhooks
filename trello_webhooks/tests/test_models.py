@@ -52,6 +52,10 @@ def mock_trello_sync_x(webhook, verb):
     return webhook
 
 
+def mock_get_attachment_content_type(url):
+    return 'image/png'
+
+
 class WebhookModelTests(TestCase):
 
     def test_default_properties(self):
@@ -261,6 +265,15 @@ class CallbackEventModelTest(TestCase):
 
     def test_save(self):
         pass
+
+    @mock.patch('trello_webhooks.contenttypes.get_attachment_content_type',
+                mock_get_attachment_content_type)
+    def test_add_attachment_event(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce._merge_content_type()
+        ad = ce.action_data
+        self.assertTrue(ad['attachment']['contentType'] == 'image/png')
 
     def test_action_data(self):
         ce = CallbackEvent()
