@@ -16,7 +16,7 @@ INSTALLED_APPS = ('trello_webhooks',)
 try:
     import django_nose  # noqa
 
-    INSTALLED_APPS = ('trello_webhooks', 'django_nose')
+    INSTALLED_APPS = ('test_app', 'trello_webhooks', 'django_nose')
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     print u"TEST_RUNNER set to use django_nose"
     import coverage  # noqa

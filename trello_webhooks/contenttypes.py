@@ -39,8 +39,8 @@ def get_attachment_content_type(url):
     return magic.from_buffer(read_chunk(url), mime=True)
 
 
-def attachment_is_image(url):
-    return get_attachment_content_type(url) in known_extensions
+def contenttype_is_image(ctype):
+    return ctype in known_extensions
 
 
 def merge_content_type(attachment):
