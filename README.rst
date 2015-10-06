@@ -33,6 +33,15 @@ please don't expect much more.
 Background
 ----------
 
+Trello is a very simple web app that manages lists of cards on a board - it's like a
+digital pinboard. You can create cards, comment on them, add attachments, move them
+from list to list. To make it possible to integrate with Trello, it fires off
+callback events whenever a user interacts with any entity within it. There is a
+huge list of available events. This project is designed to make it easy to capture
+those events, and it includes a canonical implementation of an event receiver that
+pipes those events to HipChat, which is a hosted IRC-like chat app - exactly like
+Slack.
+
 `Trello webhooks <https://trello.com/docs/gettingstarted/webhooks.html>`_
 can only be managed programmatically via the API, which is clever, but also
 a massive PITA. In addition, whilst creating a new webhook, Trello will
