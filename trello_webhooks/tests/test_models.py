@@ -315,3 +315,33 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_attachment_is_image(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertTrue(ce.attachment_is_image)
+
+    def test_attachment_is_image_url(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce.event_payload['action']['data']['attachment']['url'] = 'http://www.yunojuno.com'
+        self.assertFalse(ce.attachment_is_image)
+
+    def test_attachment_mime_type(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertTrue(ce.attachment_mime_type, ('image/png', None))
+
+    def test_attachment_mime_type_not_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('createCard', 'text')
+        self.assertEquals(ce.attachment_mime_type, None)
+        self.assertFalse(ce.attachment_is_image)
+
+    def test_is_image_stored_on_save(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=hook, event_type='addAttachmentToCard')
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce.save()
+        retrieved = CallbackEvent.objects.all()[0]
+        self.assertTrue(retrieved.event_payload['action']['data']['attachment']['image'])

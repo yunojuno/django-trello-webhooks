@@ -1,0 +1,73 @@
+{
+    "action": {
+         "id":"4f6e4ae07f4c6c2b35adb42e",
+         "idMemberCreator":"4f55dc2f8e0358c24d194be0",
+         "data":{
+            "card":{
+               "id":"4f2b8b4d4f2cb9d16d3684e6",
+               "name":"Welcome to Trello!"
+            },
+            "board":{
+               "id":"4f2b8b4d4f2cb9d16d3684c9",
+               "name":"Welcome Board"
+            },
+            "attachment":{
+               "id":"4f6e4ae07f4c6c2b35adb42c",
+               "name":"howItWorks.png",
+               "url":"https://yunojuno-www-assets.s3.amazonaws.com/images/howitworksfor_emp_708.original.png"
+            }
+         },
+         "type":"addAttachmentToCard",
+         "date":"2015-03-24T22:29:52.548Z",
+         "memberCreator":{
+            "id":"4f55dc2f8e0358c24d194be0",
+            "username":"kipparker",
+            "fullName":"Test User",
+            "initials":"KP",
+            "avatarHash":"852f1ba717618e2d0ba0c0a8de5eaad4"
+         }
+      },
+    "model": {
+        "id": "5476fab52086e26047fa328c",
+        "name": "Django Trello Webhooks Test Board",
+        "desc": "",
+        "descData": null,
+        "closed": false,
+        "idOrganization": null,
+        "pinned": false,
+        "url": "https://trello.com/b/TAAnwdP9/django-trello-webhooks-test-board",
+        "shortUrl": "https://trello.com/b/TAAnwdP9",
+        "prefs": {
+            "permissionLevel": "public",
+            "voting": "disabled",
+            "comments": "members",
+            "invitations": "members",
+            "selfJoin": false,
+            "cardCovers": true,
+            "cardAging": "regular",
+            "calendarFeedEnabled": false,
+            "background": "blue",
+            "backgroundColor": "#0079BF",
+            "backgroundImage": null,
+            "backgroundImageScaled": null,
+            "backgroundTile": false,
+            "backgroundBrightness": "unknown",
+            "canBePublic": true,
+            "canBeOrg": true,
+            "canBePrivate": true,
+            "canInvite": true
+        },
+        "labelNames": {
+            "green": "",
+            "yellow": "",
+            "orange": "",
+            "red": "",
+            "purple": "",
+            "blue": "",
+            "pink": "",
+            "sky": "",
+            "lime": "",
+            "black": ""
+        }
+    }
+}
