@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+from mimetypes import MimeTypes
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -15,6 +16,9 @@ from trello_webhooks import settings
 from trello_webhooks import signals
 
 logger = logging.getLogger(__name__)
+
+# Attachments that will be rendered as an image tag
+IMAGE_ATTACHMENT_TYPES = ('image/png', 'image/gif', 'image/jpeg')
 
 
 # free-floating function to get a new trello.TrelloClient object
@@ -318,6 +322,21 @@ class CallbackEvent(models.Model):
     def template(self):
         """Return full path to render template, based on event_type."""
         return 'trello_webhooks/%s.html' % self.event_type
+
+    @property
+    def attachment_mime_type(self):
+        mime = MimeTypes()
+        try:
+            return mime.guess_type(
+                self.event_payload['action']['data']['attachment']['url'])
+        except KeyError:
+            return None
+
+    @property
+    def attachment_is_image(self):
+        if self.attachment_mime_type is None:
+            return False
+        return self.attachment_mime_type[0] in IMAGE_ATTACHMENT_TYPES
 
     def render(self):
         """Render the event using an HTML template.
