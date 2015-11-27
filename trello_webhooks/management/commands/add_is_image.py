@@ -21,4 +21,4 @@ class Command(BaseCommand):
             event.save()
             updated += 1
 
-        print(u"Updated {0} 'addAttachmentToCard' events.".format(updated))
+        logger.info(u"Updated {0} 'addAttachmentToCard' events.".format(updated))
