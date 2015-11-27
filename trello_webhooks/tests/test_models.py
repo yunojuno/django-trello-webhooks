@@ -337,3 +337,11 @@ class CallbackEventModelTest(TestCase):
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEquals(ce.attachment_mime_type, None)
         self.assertFalse(ce.attachment_is_image)
+
+    def test_is_image_stored_on_save(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=hook, event_type='addAttachmentToCard')
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce.save()
+        retrieved = CallbackEvent.objects.all()[0]
+        self.assertTrue(retrieved.event_payload['action']['data']['attachment']['image'])

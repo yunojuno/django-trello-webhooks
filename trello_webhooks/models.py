@@ -18,7 +18,8 @@ from trello_webhooks import signals
 logger = logging.getLogger(__name__)
 
 # Attachments that will be rendered as an image tag
-IMAGE_ATTACHMENT_TYPES = ('image/png', 'image/gif', 'image/jpeg')
+IMAGE_ATTACHMENT_TYPES = ('image/png', 'image/gif', 'image/jpeg', 'image/tiff',
+                          'image/bmp', 'image/svg+xml', 'image/webp')
 
 
 # free-floating function to get a new trello.TrelloClient object
@@ -270,6 +271,9 @@ class CallbackEvent(models.Model):
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+        # Check if we need the attachment image flag
+        if self.event_type == 'addAttachmentToCard':
+            self.action_data['attachment']['image'] = self.attachment_is_image
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
