@@ -9,6 +9,6 @@ def render_attachment(attachment):
     """Returns the attachment in an img tag where necessary
     """
     if attachment.get('image') is True:
-        return mark_safe("<img src='%s'>" % attachment.get('url'))
+        return mark_safe("<img src='{}'>".format(attachment.get('url')))
     else:
         return attachment['name']
