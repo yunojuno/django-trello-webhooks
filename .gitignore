@@ -33,6 +33,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+coverage_reports/
 
 # Translations
 *.mo
@@ -48,6 +49,9 @@ coverage.xml
 # Django stuff:
 *.log
 *.pot
+
+# Local environment variables
+env.sh
 
 # Sphinx documentation
 docs/_build/
