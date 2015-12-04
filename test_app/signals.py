@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from trello_webhooks.signals import callback_received
 
 from test_app.hipchat import send_to_hipchat
+from test_app.models import EventType
 
 logger = logging.getLogger(__name__)
 
@@ -28,12 +29,27 @@ def get_supported_events():
     return [t.split('.')[0] for t in listdir(app_template_path)]
 
 
+def record_event(event_type):
+    """Lookup the EventType, increment the count."""
+    try:
+        et = EventType.objects.get(label=event_type)
+    except EventType.DoesNotExist:
+        et = EventType.objects.create(label=event_type)
+    et.event_count += 1
+    et.save()
+    return et
+
+
 @receiver(callback_received, dispatch_uid="callback_received")
 def on_callback_received(sender, **kwargs):
     # if a template exists for the event_type, then send the output
     # as a normal notification, in 'yellow'
     # if no template exists, send a notification in 'red'
     event = kwargs.pop('event')
+    event_type = record_event(event.event_type)
+    if not event_type.is_active:
+        logger.debug(u"Suppressing inactive Trello event '%s'", event_type.label)
+        return
     html = event.render()
     if settings.HIPCHAT_ENABLED:
         logger.debug(
