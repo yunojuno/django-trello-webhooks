@@ -245,13 +245,13 @@ class CallbackEvent(models.Model):
     def __unicode__(self):
         if self.id:
             return (
-                "CallbackEvent %i: '%s' raised by webhook %s." %
-                (self.id, self.event_type, self.webhook.id)
+                u"CallbackEvent %i: '%s' raised by webhook %s." %
+                (self.id, self.event_type, self.webhook_id)
             )
         else:
             return (
-                "CallbackEvent: '%s' raised by webhook %s." %
-                (self.event_type, self.webhook.id)
+                u"CallbackEvent: '%s' raised by webhook %s." %
+                (self.event_type, self.webhook_id)
             )
 
     def __str__(self):

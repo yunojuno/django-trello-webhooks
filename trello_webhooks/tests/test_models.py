@@ -257,10 +257,46 @@ class WebhookModelTests(TestCase):
 class CallbackEventModelTest(TestCase):
 
     def test_default_properties(self):
-        pass
+        ce = CallbackEvent()
+        self.assertIsNone(ce.id)
+        self.assertIsNone(ce.webhook_id)
+        self.assertIsNone(ce.timestamp)
+        self.assertEqual(ce.event_type, '')
+        self.assertEqual(ce.event_payload, {})
 
     def test_save(self):
-        pass
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=hook)
+
+        mock_datetime = datetime.datetime(2016, 3, 5)
+        with mock.patch('trello_webhooks.models.timezone.now', return_value=mock_datetime):
+            ce.save()
+
+        self.assertEqual(ce.timestamp, mock_datetime)
+
+    def test_unicode(self):
+        """
+        Django's encoding utils can call __unicode__ directly,
+        so it's important that it actually returns unicode.
+        """
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=hook, event_type="someRandomEvent")
+        self.assertEqual(type(ce.__unicode__()), unicode)
+
+    def test_str_repr(self):
+        hook = Webhook(id=123).save(sync=False)
+        ce = CallbackEvent(event_type='someRandomEvent', webhook=hook)
+        expected_unicode = u"CallbackEvent: 'someRandomEvent' raised by webhook 123."
+        self.assertEqual(str(ce), expected_unicode)
+        self.assertEqual(unicode(ce), expected_unicode)
+        self.assertEqual(repr(ce), u"<CallbackEvent id=None, webhook=123, event_type='someRandomEvent'>")
+
+        # now with an id
+        ce.id = 456
+        expected_unicode_id = u"CallbackEvent 456: 'someRandomEvent' raised by webhook 123."
+        self.assertEqual(str(ce), expected_unicode_id)
+        self.assertEqual(unicode(ce), expected_unicode_id)
+        self.assertEqual(repr(ce), u"<CallbackEvent id=456, webhook=123, event_type='someRandomEvent'>")
 
     def test_action_data(self):
         ce = CallbackEvent()
