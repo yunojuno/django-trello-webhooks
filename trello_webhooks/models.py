@@ -13,6 +13,7 @@ import trello
 
 from trello_webhooks import settings
 from trello_webhooks import signals
+from trello_webhooks import content_types
 
 logger = logging.getLogger(__name__)
 
@@ -264,10 +265,21 @@ class CallbackEvent(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        """Update timestamp"""
+        """Update timestamp and handle attachments."""
         self.timestamp = timezone.now()
+        self._process_attachment()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def _process_attachment(self):
+        """Ensure that 'mimeType' is populated if attachment is available."""
+        if self.attachment and not self.attachment.get('mimeType'):
+            url = self.attachment.get('url')
+            if url:
+                self.attachment['mimeType'] = (
+                    content_types.guess_url_content_type(url))
+            else:
+                logger.exception("Attachment url is missing.")
 
     @property
     def action_data(self):
@@ -293,6 +305,11 @@ class CallbackEvent(models.Model):
     def card(self):
         """Returns 'card' JSON extracted from event_payload."""
         return self.action_data.get('card') if self.action_data else None
+
+    @property
+    def attachment(self):
+        """Returns 'attachment' JSON extracted from event_payload."""
+        return self.action_data.get('attachment') if self.action_data else None
 
     @property
     def member_name(self):
