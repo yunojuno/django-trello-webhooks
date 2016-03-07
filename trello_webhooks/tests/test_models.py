@@ -257,10 +257,78 @@ class WebhookModelTests(TestCase):
 class CallbackEventModelTest(TestCase):
 
     def test_default_properties(self):
-        pass
+        ce = CallbackEvent()
+        self.assertIsNone(ce.id)
+        self.assertIsNone(ce.webhook_id)
+        self.assertIsNone(ce.timestamp)
+        self.assertEqual(ce.event_type, '')
+        self.assertEqual(ce.event_payload, {})
 
-    def test_save(self):
-        pass
+    @mock.patch('trello_webhooks.models.timezone.now')
+    @mock.patch.object(CallbackEvent, '_process_attachment')
+    def test_save(self, mock_process_attachment, mock_now):
+        frozen_now = datetime.datetime(2016, 3, 5)
+        mock_now.return_value = frozen_now
+
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=hook)
+        ce.save()
+
+        self.assertEqual(ce.timestamp, frozen_now)
+        self.assertTrue(mock_process_attachment.called)
+
+    @mock.patch('trello_webhooks.models.content_types.guess_url_content_type',
+                return_value='image/jpg')
+    def test_process_attachment(self, mock_guess_content_type):
+        ce = CallbackEvent()
+
+        # Test nothing really happens if there is no attachment
+        ce._process_attachment()
+        self.assertIsNone(ce.attachment)
+        self.assertFalse(mock_guess_content_type.called)
+
+        # Test mime type is not updated if it's already populated
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce.attachment['mimeType'] = "existing/mimetype"
+        ce._process_attachment()
+        self.assertEqual(ce.attachment.get('mimeType'), "existing/mimetype")
+
+        # Test mime type is added when it's missing
+        del ce.attachment['mimeType']
+        ce._process_attachment()
+        self.assertEqual(ce.attachment.get('mimeType'), 'image/jpg')
+
+    def test_unicode(self):
+        """
+        Django's encoding utils can call __unicode__ directly,
+        so it's important that it actually returns unicode.
+        """
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=hook, event_type="someRandomEvent")
+        self.assertEqual(type(ce.__unicode__()), unicode)
+
+    def test_str_repr(self):
+        hook = Webhook(id=12).save(sync=False)
+        ce = CallbackEvent(event_type='someRandomEvent', webhook=hook)
+        expected_unicode = (
+            u"CallbackEvent: 'someRandomEvent' raised by webhook 12.")
+        self.assertEqual(str(ce), expected_unicode)
+        self.assertEqual(unicode(ce), expected_unicode)
+        self.assertEqual(
+            repr(ce),
+            u"<CallbackEvent id=None, webhook=12, event_type='someRandomEvent'>"  # noqa
+        )
+
+        # now with an id
+        ce.id = 45
+        expected_unicode_id = (
+            u"CallbackEvent 45: 'someRandomEvent' raised by webhook 12.")
+        self.assertEqual(str(ce), expected_unicode_id)
+        self.assertEqual(unicode(ce), expected_unicode_id)
+        self.assertEqual(
+            repr(ce),
+            u"<CallbackEvent id=45, webhook=12, event_type='someRandomEvent'>"
+        )
 
     def test_action_data(self):
         ce = CallbackEvent()
@@ -315,3 +383,9 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_attachment(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.attachment, None)
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.attachment, ce.event_payload['action']['data']['attachment'])  # noqa
