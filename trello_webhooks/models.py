@@ -280,6 +280,11 @@ class CallbackEvent(models.Model):
         return self.event_payload.get('action', {}).get('memberCreator')
 
     @property
+    def attachment(self):
+        """Returns 'attachment' JSON extracted from event_payload."""
+        return self.action_data.get('attachment', {}) if self.action_data else None
+
+    @property
     def board(self):
         """Returns 'board' JSON extracted from event_payload."""
         return self.action_data.get('board') if self.action_data else None
@@ -313,6 +318,11 @@ class CallbackEvent(models.Model):
     def card_name(self):
         """Return card name if it exists (used in admin)."""
         return self.card.get('name') if self.card else None
+
+    @property
+    def attachment_type(self):
+        """Return attachment type if it exists (used in admin)."""
+        return self.attachment.get('mimeType') if self.attachment else None
 
     @property
     def template(self):
