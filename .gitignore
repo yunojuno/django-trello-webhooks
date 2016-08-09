@@ -53,3 +53,9 @@ coverage.xml
 docs/_build/
 
 test_app/static
+
+# Local Database
+*.sqlite3
+
+# Coverage reports
+coverage_reports
