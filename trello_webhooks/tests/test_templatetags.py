@@ -6,6 +6,7 @@ from trello_webhooks.templatetags.trello_webhook_tags import (
     trello_api_key,
     trello_updates
 )
+from test_app.templatetags.display_attachment import display_attachment_html
 
 
 class TemplateTagTests(TestCase):
@@ -28,3 +29,27 @@ class TemplateTagTests(TestCase):
             trello_updates(new, old),
             {'pos': (1, None)}
         )
+
+    def test_display_html(self):
+        data_image = {
+            "action": {
+                "data": {
+                    "attachment": {
+                        "id": "549029d1fb1ce0bfa8f05117",
+                        "mimeType": "image/png",
+                    },
+                }
+            }
+        }
+        data = {
+            "action": {
+                "data": {
+                    "attachment": {
+                        "id": "549029d1fb1ce0bfa8f05117",
+                        "mimeType": '',
+                    },
+                }
+            }
+        }
+        self.assertIn('image', display_attachment_html(data_image))
+        self.assertNotIn('image', display_attachment_html(data))
