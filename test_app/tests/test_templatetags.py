@@ -6,6 +6,7 @@ from django.test import TestCase
 
 from trello_webhooks.models import CallbackEvent
 
+
 class TemplateTagTests(TestCase):
 
     @staticmethod
@@ -30,7 +31,7 @@ class TemplateTagTests(TestCase):
             {% render_attachment attachment %}
         """)
         context = Context(event.action_data)
-        return BeautifulSoup(template.render(context))
+        return BeautifulSoup(template.render(context), 'html.parser')
 
     def test_renders_image(self):
         """
