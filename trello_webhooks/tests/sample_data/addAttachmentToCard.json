@@ -1,0 +1,78 @@
+{
+    "action": {
+        "data": {
+            "attachment": {
+                "id": "56daeb501ee0b071346d3a59",
+                "name": "29302_381713684541_4939888_n.jpg",
+                "previewUrl": "https://trello-attachments.s3.amazonaws.com/56dae8c9f623068c605a70dd/480x720/ef992f7726aa0aa50ca07cb69713864c/29302_381713684541_4939888_n.jpg",
+                "previewUrl2x": "https://trello-attachments.s3.amazonaws.com/56dae8c9f623068c605a70dd/480x720/ef992f7726aa0aa50ca07cb69713864c/29302_381713684541_4939888_n.jpg",
+                "url": "https://trello-attachments.s3.amazonaws.com/56dae8c9f623068c605a70dd/480x720/ef992f7726aa0aa50ca07cb69713864c/29302_381713684541_4939888_n.jpg"
+            },
+            "board": {
+                "id": "5565ce6272beb2df1e2b3649",
+                "name": "Personal Development",
+                "shortLink": "2XWdeN90"
+            },
+            "card": {
+                "id": "56dae8c9f623068c605a70dd",
+                "idShort": 7,
+                "name": "Test card",
+                "shortLink": "64ByUJ6r"
+            }
+        },
+        "date": "2016-03-05T14:21:04.901Z",
+        "id": "56daeb501ee0b071346d3a5f",
+        "idMemberCreator": "4e71c5f7424fea00005fb3ce",
+        "memberCreator": {
+            "avatarHash": "03265131c176418484afe227af18589d",
+            "fullName": "Velo Ciraptor",
+            "id": "4e71c5f7424fea00005fb3ce",
+            "initials": "VC",
+            "username": "xxdinoxx"
+        },
+        "type": "addAttachmentToCard"
+    },
+    "model": {
+        "closed": false,
+        "desc": "",
+        "descData": null,
+        "id": "5476fab52086e26047fa328c",
+        "idOrganization": null,
+        "labelNames": {
+            "black": "",
+            "blue": "",
+            "green": "",
+            "lime": "",
+            "orange": "",
+            "pink": "",
+            "purple": "",
+            "red": "",
+            "sky": "",
+            "yellow": ""
+        },
+        "name": "Django Trello Webhooks Test Board",
+        "pinned": false,
+        "prefs": {
+            "background": "blue",
+            "backgroundBrightness": "dark",
+            "backgroundColor": "#0079BF",
+            "backgroundImage": null,
+            "backgroundImageScaled": null,
+            "backgroundTile": false,
+            "calendarFeedEnabled": false,
+            "canBeOrg": true,
+            "canBePrivate": true,
+            "canBePublic": true,
+            "canInvite": true,
+            "cardAging": "regular",
+            "cardCovers": true,
+            "comments": "members",
+            "invitations": "members",
+            "permissionLevel": "private",
+            "selfJoin": false,
+            "voting": "disabled"
+        },
+        "shortUrl": "https://trello.com/b/TAAnwdP9",
+        "url": "https://trello.com/b/TAAnwdP9/django-trello-webhooks-test-board"
+    }
+}
