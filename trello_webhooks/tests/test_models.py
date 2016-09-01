@@ -315,3 +315,26 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_action_data_includes_attachment_content_type(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.action_data['attachment']['content_type'], 'image/jpeg')  # noqa
+
+    def test_action_data_ignores_content_type_for_absent_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('createCard', 'text')
+        self.assertNotIn('attachment', ce.action_data)
+
+    @mock.patch('trello_webhooks.models.render_to_string')
+    def test_render_handles_valid_event_type(self, mock_render_to_string):
+        hook = CallbackEvent(event_type='addAttachmentToCard')
+        hook.render()
+        mock_render_to_string.assert_called_once_with(
+            'trello_webhooks/addAttachmentToCard.html',
+            {}
+        )
+
+    def test_render_handles_invalid_event_type(self):
+        hook = CallbackEvent(event_type='oh_no_not_the_bees')
+        self.assertIsNone(hook.render())

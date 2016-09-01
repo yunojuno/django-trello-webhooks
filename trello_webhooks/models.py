@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import mimetypes
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -270,9 +271,22 @@ class CallbackEvent(models.Model):
         return self
 
     @property
-    def action_data(self):
+    def unadulterated_action_data(self):
         """Returns the 'data' node from the payload."""
         return self.event_payload.get('action', {}).get('data')
+
+    @property
+    def action_data(self):
+        """
+        Returns the 'data' node from the payload, having augmented it with
+        additional data such as attachment content type.
+
+        """
+        action_data = self.unadulterated_action_data
+        if action_data and 'attachment' in action_data:
+            content_type = self.resolve_attachment_content_type()
+            action_data['attachment']['content_type'] = content_type
+        return action_data
 
     @property
     def member(self):
@@ -318,6 +332,12 @@ class CallbackEvent(models.Model):
     def template(self):
         """Return full path to render template, based on event_type."""
         return 'trello_webhooks/%s.html' % self.event_type
+
+    def resolve_attachment_content_type(self):
+        """Guesses the content type of the attachment."""
+        url = self.unadulterated_action_data.get('attachment', {}).get('url')
+        mime_type, encoding = mimetypes.guess_type(url or '', strict=False)
+        return mime_type or ''
 
     def render(self):
         """Render the event using an HTML template.
