@@ -1,0 +1,9 @@
+{% if is_image %}
+  <a href='{{url}}'>
+    <img src='{{url}}'>
+  </a>
+{% else %}
+  "<strong>
+    <a href="{{url}}">{{name}}</a>
+  </strong>"
+{% endif %}
