@@ -3,7 +3,7 @@ from django.conf import settings
 
 import requests
 
-HIPCHAT_API_URL = 'https://api.hipchat.com/v1/rooms/message'
+HIPCHAT_API_URL = 'https://api.hipchat.com/v2/room/%s/notification'
 
 
 def send_to_hipchat(
@@ -26,4 +26,4 @@ def send_to_hipchat(
         'room_id': room,
         'message': message
     }
-    return requests.post(HIPCHAT_API_URL, data=payload).status_code
+    return requests.post(HIPCHAT_API_URL % room, data=payload).status_code
