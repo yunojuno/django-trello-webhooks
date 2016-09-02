@@ -4,7 +4,7 @@ import logging
 
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.template.base import TemplateDoesNotExist
+from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils import timezone
 

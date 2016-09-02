@@ -30,7 +30,6 @@ else:
 # ============= / APP SETTINGS ===================
 
 DEBUG = environ.get('DEBUG', False)
-TEMPLATE_DEBUG = DEBUG
 
 # You should really update this in your app!
 # see https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
@@ -66,18 +65,22 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-TEMPLATE_CONTEXT_PROCESSORS = [
-    'django.contrib.messages.context_processors.messages',
-    'django.contrib.auth.context_processors.auth',
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.messages.context_processors.messages',
+                'django.contrib.auth.context_processors.auth',
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader'
+            ],
+            'debug': DEBUG,
+        },
+    },
 ]
-
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader'
-)
-
-TEMPLATE_DIRS = (
-)
 
 STATIC_URL = "/static/"
 

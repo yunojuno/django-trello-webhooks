@@ -1,21 +1,20 @@
 from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.contrib import admin
+from django.views.static import serve
 
 admin.autodiscover()
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^webhooks/', include('trello_webhooks.urls')),
-)
+]
 
 if settings.DEBUG is False:
-    urlpatterns += patterns(
-        '',
+    urlpatterns += [
         url(
             r'^static/(?P<path>.*)$',
-            'django.views.static.serve',
+            serve,
             {'document_root': settings.STATIC_ROOT}
         ),
-    )
+    ]
