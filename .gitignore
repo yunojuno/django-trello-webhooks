@@ -56,3 +56,4 @@ test_app/static
 
 coverage_reports/
 *.swp
+tags
