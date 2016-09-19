@@ -269,6 +269,10 @@ class CallbackEvent(models.Model):
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
+
+    def _resolve_content_type(self):
+        pass
+
     @property
     def action_data(self):
         """Returns the 'data' node from the payload."""

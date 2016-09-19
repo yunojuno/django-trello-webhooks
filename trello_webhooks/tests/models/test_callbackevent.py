@@ -14,17 +14,20 @@ class CallbackEventModelTest(TestCase):
     def test_save(self):
         pass
 
-
     def test_resolve_content_type(self):
         ce = CallbackEvent()
-        ce.resolve_content_type()
-
-
+        ce._resolve_content_type()
 
     def test_action_data(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         ce.event_payload = get_sample_data('createCard', 'text')
+        self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
+
+    def test_add_attachment_to_card(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
         self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
 
     def test_member(self):
