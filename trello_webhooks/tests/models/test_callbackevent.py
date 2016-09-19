@@ -14,6 +14,13 @@ class CallbackEventModelTest(TestCase):
     def test_save(self):
         pass
 
+
+    def test_resolve_content_type(self):
+        ce = CallbackEvent()
+        ce.resolve_content_type()
+
+
+
     def test_action_data(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
