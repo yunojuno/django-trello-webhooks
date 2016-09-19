@@ -22,8 +22,6 @@ class CallbackEventModelTest(TestCase):
     def test_save(self):
         pass
 
-
-
     def test_action_data(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
@@ -37,7 +35,6 @@ class CallbackEventModelTest(TestCase):
         self.assertIn('attachment', ce.action_data)
         self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
 
-
     def test_resolve_content_type_jpeg(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
@@ -45,40 +42,59 @@ class CallbackEventModelTest(TestCase):
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
+
         self.assertEqual(content_type, 'image/jpeg')
+        self.assertEqual(ce.action_data['attachment']['content_type'], 'image/jpeg')
 
     def test_resolve_content_type_png(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         data = get_sample_data('addAttachmentToCard', 'text')
+
+        #--------------------------------
+        # Change ext to PNG
+        #⨪-------------------------------
         data = change_extension(data, 'png')
         ce.event_payload = data
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
+
         self.assertEqual(content_type, 'image/png')
+        self.assertEqual(ce.action_data['attachment']['content_type'], 'image/png')
 
     def test_resolve_content_type_python(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         data = get_sample_data('addAttachmentToCard', 'text')
+
+        #--------------------------------
+        # Change ext to Python
+        #⨪-------------------------------
         data = change_extension(data, 'py')
         ce.event_payload = data
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
+
         self.assertEqual(content_type, 'text/x-python')
+        self.assertEqual(ce.action_data['attachment']['content_type'], 'text/x-python')
 
     def test_resolve_content_type_unrecognised(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         data = get_sample_data('addAttachmentToCard', 'text')
+        #--------------------------------
+        # Change ext to impossible ext
+        #⨪-------------------------------
         data = change_extension(data, 'NO-IDEA-OF-WHAT-THIS-IS')
         ce.event_payload = data
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
+
         self.assertIsNone(content_type)
+        self.assertIsNone(ce.action_data['attachment']['content_type'])
 
     def test_member(self):
         ce = CallbackEvent()

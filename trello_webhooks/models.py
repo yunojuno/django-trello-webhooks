@@ -279,7 +279,20 @@ class CallbackEvent(models.Model):
     @property
     def action_data(self):
         """Returns the 'data' node from the payload."""
-        return self.event_payload.get('action', {}).get('data')
+        data = self.event_payload.get('action', {}).get('data')
+
+        if not data:
+            return data
+
+        url = data.get('attachment', {}).get('url')
+
+        if not url:
+            return data
+
+        content_type = self.resolve_content_type(url)
+
+        data['attachment']['content_type'] = content_type
+        return data
 
     @property
     def member(self):
