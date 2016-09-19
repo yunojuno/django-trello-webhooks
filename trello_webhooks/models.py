@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import mimetypes
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -269,9 +270,11 @@ class CallbackEvent(models.Model):
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
+    def resolve_content_type(self, url):
+        """Returns the mime type of the resource in the URL."""
+        mime_type, _ = mimetypes.guess_type(url)
+        return mime_type
 
-    def _resolve_content_type(self):
-        pass
 
     @property
     def action_data(self):

@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
+import json
 from django.test import TestCase
 
 from trello_webhooks.tests import get_sample_data
 from trello_webhooks.models import CallbackEvent
 
+
+def change_extension(data, new_extension):
+    data_json = json.loads(data)
+    new_url = data_json['action']['data']['attachment']['url'][:-3] + new_extension
+    data_json['action']['data']['attachment']['url'] = new_url
+    data = json.dumps(data_json)
+    return data
 
 
 class CallbackEventModelTest(TestCase):
@@ -13,6 +21,8 @@ class CallbackEventModelTest(TestCase):
 
     def test_save(self):
         pass
+
+
 
     def test_action_data(self):
         ce = CallbackEvent()
@@ -28,15 +38,47 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
 
 
-    def test_resolve_content_type_jpg(self):
+    def test_resolve_content_type_jpeg(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
-        self.assertEqual(content_type, 'image/jpg')
+        self.assertEqual(content_type, 'image/jpeg')
 
+    def test_resolve_content_type_png(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        data = get_sample_data('addAttachmentToCard', 'text')
+        data = change_extension(data, 'png')
+        ce.event_payload = data
+        self.assertIn('attachment', ce.action_data)
+        the_file = ce.action_data['attachment']['url']
+        content_type = ce.resolve_content_type(the_file)
+        self.assertEqual(content_type, 'image/png')
+
+    def test_resolve_content_type_python(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        data = get_sample_data('addAttachmentToCard', 'text')
+        data = change_extension(data, 'py')
+        ce.event_payload = data
+        self.assertIn('attachment', ce.action_data)
+        the_file = ce.action_data['attachment']['url']
+        content_type = ce.resolve_content_type(the_file)
+        self.assertEqual(content_type, 'text/x-python')
+
+    def test_resolve_content_type_unrecognised(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        data = get_sample_data('addAttachmentToCard', 'text')
+        data = change_extension(data, 'NO-IDEA-OF-WHAT-THIS-IS')
+        ce.event_payload = data
+        self.assertIn('attachment', ce.action_data)
+        the_file = ce.action_data['attachment']['url']
+        content_type = ce.resolve_content_type(the_file)
+        self.assertIsNone(content_type)
 
     def test_member(self):
         ce = CallbackEvent()
