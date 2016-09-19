@@ -53,3 +53,6 @@ coverage.xml
 docs/_build/
 
 test_app/static
+
+coverage_reports/
+*.swp
