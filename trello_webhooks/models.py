@@ -275,10 +275,13 @@ class CallbackEvent(models.Model):
         mime_type, _ = mimetypes.guess_type(url)
         return mime_type
 
-
     @property
     def action_data(self):
-        """Returns the 'data' node from the payload."""
+        """Returns the 'data' node from the payload.
+
+        Adds extra 'content_type' field if an attachment is
+        present.
+        """
         data = self.event_payload.get('action', {}).get('data')
 
         if not data:
@@ -286,6 +289,9 @@ class CallbackEvent(models.Model):
 
         url = data.get('attachment', {}).get('url')
 
+        #----------------------------
+        # No URL, then no attachment
+        #----------------------------
         if not url:
             return data
 
