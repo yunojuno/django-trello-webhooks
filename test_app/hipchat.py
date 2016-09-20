@@ -3,27 +3,30 @@ from django.conf import settings
 
 import requests
 
-HIPCHAT_API_URL = 'https://api.hipchat.com/v1/rooms/message'
+HIPCHAT_API_URL = 'https://simpleoption.hipchat.com/v2/room/{room_id}/notification?auth_token={auth_token}'
 
 
-def send_to_hipchat(
-    message,
-    token=settings.HIPCHAT_API_TOKEN,
-    room=settings.HIPCHAT_ROOM_ID,
-    sender="Trello",
-    color="yellow",
-    notify=False):
+def send_to_hipchat(message,
+                    token=settings.HIPCHAT_API_TOKEN,
+                    room=settings.HIPCHAT_ROOM_ID,
+                    sender="Trello",
+                    color="yellow",
+                    notify=False):
     """
     Send a message to HipChat.
 
     Returns the status code of the request. Should be 200.
     """
     payload = {
-        'auth_token': token,
         'notify': notify,
         'color': color,
-        'from': sender,
-        'room_id': room,
-        'message': message
+        'message': message,
+        'message_format': 'html',
     }
-    return requests.post(HIPCHAT_API_URL, data=payload).status_code
+
+
+    url = HIPCHAT_API_URL.format(room_id=room, auth_token=token)
+
+    resp = requests.post(url, json=payload)
+
+    return resp.status_code
