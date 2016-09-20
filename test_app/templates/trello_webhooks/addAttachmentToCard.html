@@ -1,3 +1,3 @@
 {% load trello_tags %}
-<strong>{{action.memberCreator.initials}}</strong> added attachment {% trello_media action.data.attachment %}
+<strong>{{action.memberCreator.initials}}</strong> added attachment {{ action.data.attachment|trello_multimedia }}
 {% include 'trello_webhooks/partials/card_link.html' %}
