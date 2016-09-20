@@ -29,8 +29,12 @@ def get_trello_client(api_key=settings.TRELLO_API_KEY,
 class TrelloWebhookManager(object):
     """Model manager used to interact with Trello API."""
 
-    def __init__(self):
-        self.client = get_trello_client()
+    def __init__(self, client=None):
+        if not client:
+            client = get_trello_client()
+
+        self.client = client
+
 
     def list_hooks(self, auth_token):
         """Return all the hooks registered on Trello for a given auth_token.
