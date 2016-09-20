@@ -3,53 +3,24 @@ import datetime
 import json
 import mock
 
-from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 
-import trello
-
-from trello_webhooks.models import Webhook, CallbackEvent
+from trello_webhooks.tests import get_sample_data
+from trello_webhooks.utils.testing import mock_trello_sync
+from trello_webhooks.models import Webhook
 from trello_webhooks.settings import (
     TRELLO_API_KEY,
     TRELLO_API_SECRET,
     CALLBACK_DOMAIN
 )
-from trello_webhooks.tests import get_sample_data
 
 
-def mock_trello_sync(webhook, verb):
-    """Fake version of the Webhook._trello_sync method.
+class TrelloClientMock(object):
+    def fetch_json(self, url, http_method, post_args):
+        if http_method == "OK_CALL":
+            return {'id': 1111, 'active': True}
 
-    This mock requires no direct connection to Trello, and is deterministic,
-    so that it can be used in testing.
-
-    It monkey-patches the Webhook object with the 'verb' kwarg, so that you
-    can validate that the expected method was called.
-
-    In addition it sets the trello_id property as per the real version.
-
-    """
-    webhook.verb = verb
-    if verb == 'POST':
-        webhook.trello_id = 'NEW_TRELLO_ID'
-        webhook.is_active = True
-    elif verb == 'DELETE':
-        webhook.trello_id = ''
-        webhook.is_active = False
-    return webhook
-
-
-def mock_trello_sync_x(webhook, verb):
-    """Fake version of the Webhook._trello_sync method that mimics failure.
-
-    This function mimics the result of _trello_sync if Trello responds with
-    something other than a 200.
-
-    """
-    webhook = mock_trello_sync(webhook, verb)
-    webhook.trello_id = ''
-    webhook.is_active = False
-    return webhook
 
 
 class WebhookModelTests(TestCase):
@@ -64,6 +35,7 @@ class WebhookModelTests(TestCase):
         self.assertEqual(hook.last_updated_at, None)
         self.assertEqual(hook.auth_token, '')
         self.assertIsNone(hook.is_active)
+
 
     def test_str_repr(self):
         hook = Webhook(trello_id='A', trello_model_id='B', auth_token='C')
@@ -253,65 +225,12 @@ class WebhookModelTests(TestCase):
         self.assertEqual(event.event_payload, payload)
         # other CallbackEvent properties are tested in CallbackEvent tests
 
+    def test_trello_sync_ok(self):
+        w = Webhook(trello_model_id=999,
+                    auth_token="TOKEN").save(sync=False)
+        self.assertEqual(w.is_active, None)
 
-class CallbackEventModelTest(TestCase):
+        w._trello_sync(verb="OK_CALL", trello_client=TrelloClientMock())
 
-    def test_default_properties(self):
-        pass
-
-    def test_save(self):
-        pass
-
-    def test_action_data(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.action_data, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.action_data, ce.event_payload['action']['data'])
-
-    def test_member(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.action_data, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.member, ce.event_payload['action']['memberCreator'])
-
-    def test_board(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.board, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.board, ce.event_payload['action']['data']['board'])
-
-    def test_list(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.list, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.list, ce.event_payload['action']['data']['list'])
-
-    def test_card(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.card, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.card, ce.event_payload['action']['data']['card'])
-
-    def test_member_name(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.member_name, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.member_name, ce.event_payload['action']['memberCreator']['fullName'])  # noqa
-
-    def test_board_name(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.board_name, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.board_name, ce.event_payload['action']['data']['board']['name'])  # noqa
-
-    def test_list_name(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.list_name, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.list_name, ce.event_payload['action']['data']['list']['name'])  # noqa
-
-    def test_card_name(self):
-        ce = CallbackEvent()
-        self.assertEqual(ce.card_name, None)
-        ce.event_payload = get_sample_data('createCard', 'text')
-        self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+        self.assertEqual(w.is_active, True)
+        self.assertEqual(w.trello_id, 1111)

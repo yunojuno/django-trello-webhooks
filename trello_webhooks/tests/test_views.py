@@ -9,7 +9,6 @@ from trello_webhooks.tests import get_sample_data
 
 
 class WebhookViewTests(TestCase):
-    pass
 
     def setUp(self):
         self.payload = {'auth_token': 'A', 'trello_model_id': '123'}

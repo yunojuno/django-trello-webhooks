@@ -1,16 +1,17 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import mimetypes
 
-from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils import timezone
+from django.core.urlresolvers import reverse
 from django.template.base import TemplateDoesNotExist
 from django.template.loader import render_to_string
-from django.utils import timezone
 
 from jsonfield import JSONField
-import trello
 
+import trello
 from trello_webhooks import settings
 from trello_webhooks import signals
 
@@ -28,8 +29,12 @@ def get_trello_client(api_key=settings.TRELLO_API_KEY,
 class TrelloWebhookManager(object):
     """Model manager used to interact with Trello API."""
 
-    def __init__(self):
-        self.client = get_trello_client()
+    def __init__(self, client=None):
+        if not client:
+            client = get_trello_client()
+
+        self.client = client
+
 
     def list_hooks(self, auth_token):
         """Return all the hooks registered on Trello for a given auth_token.
@@ -157,10 +162,13 @@ class Webhook(models.Model):
         super(Webhook, self).delete(*args, **kwargs)
         return self
 
-    def _trello_sync(self, verb):
+    def _trello_sync(self, verb, trello_client=None):
         """Calls Trello API, update from response JSON."""
         try:
-            response = self.get_client().fetch_json(
+            if not trello_client:
+                trello_client = self.get_client()
+
+            response = trello_client.fetch_json(
                 self.trello_url,
                 http_method=verb,
                 post_args=self.post_args()
@@ -263,16 +271,52 @@ class CallbackEvent(models.Model):
             (self.id, self.webhook_id, self.event_type)
         )
 
+
+    def has_attachment(self):
+        """Returns True if the payload has an attachment."""
+        return len(self.event_payload.get('action', {})
+                                     .get('data', {})
+                                     .get('attachment', {})) > 0
+
+
+    def update_content_type(self):
+        payload = self.event_payload
+        url = payload['action']\
+                        ['data']\
+                        ['attachment'].get('url')
+        if url:
+            content_type = self.resolve_content_type(url)
+
+        self.event_payload['action']\
+                          ['data']\
+                          ['attachment']\
+                          ['content_type'] = content_type
+
+
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+
+        if self.has_attachment():
+            self.update_content_type()
+
+
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def resolve_content_type(self, url):
+        """Returns the mime type of the resource in the URL."""
+        if not isinstance(url, basestring):
+            return None
+
+        mime_type, _ = mimetypes.guess_type(url)
+        return mime_type
 
     @property
     def action_data(self):
         """Returns the 'data' node from the payload."""
         return self.event_payload.get('action', {}).get('data')
+
 
     @property
     def member(self):
