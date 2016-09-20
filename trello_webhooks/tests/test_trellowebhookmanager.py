@@ -5,7 +5,6 @@ from django.test import TestCase
 from trello_webhooks.models import TrelloWebhookManager
 
 
-
 class TrelloClientMock(object):
     def list_hooks(self, token):
         if token == "RIGHT-TOKEN":
@@ -13,10 +12,7 @@ class TrelloClientMock(object):
         return []
 
 
-
-
 class TrelloWebhookManagerTests(TestCase):
-
     def setUp(self):
         self.manager = TrelloWebhookManager(client=TrelloClientMock())
 
