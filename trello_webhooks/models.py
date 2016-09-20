@@ -278,11 +278,19 @@ class CallbackEvent(models.Model):
                                      .get('data', {})
                                      .get('attachment', {})) > 0
 
-    def update_content_type(self, content_type):
+
+    def update_content_type(self):
+        payload = self.event_payload
+        url = payload['action']\
+                        ['data']\
+                        ['attachment'].get('url')
+        if url:
+            content_type = self.resolve_content_type(url)
+
         self.event_payload['action']\
-                            ['data']\
-                            ['attachment']\
-                            ['content_type'] = content_type
+                          ['data']\
+                          ['attachment']\
+                          ['content_type'] = content_type
 
 
     def save(self, *args, **kwargs):
@@ -290,11 +298,8 @@ class CallbackEvent(models.Model):
         self.timestamp = timezone.now()
 
         if self.has_attachment():
-            payload = self.event_payload
-            url = payload['action']['data']['attachment'].get('url')
-            if url:
-                content_type = self.resolve_content_type(url)
-                self.update_content_type(content_type)
+            self.update_content_type()
+
 
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
