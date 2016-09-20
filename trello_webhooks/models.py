@@ -162,10 +162,13 @@ class Webhook(models.Model):
         super(Webhook, self).delete(*args, **kwargs)
         return self
 
-    def _trello_sync(self, verb):
+    def _trello_sync(self, verb, trello_client=None):
         """Calls Trello API, update from response JSON."""
         try:
-            response = self.get_client().fetch_json(
+            if not trello_client:
+                trello_client = self.get_client()
+
+            response = trello_client.fetch_json(
                 self.trello_url,
                 http_method=verb,
                 post_args=self.post_args()

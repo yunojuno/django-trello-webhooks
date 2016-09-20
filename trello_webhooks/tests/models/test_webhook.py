@@ -16,6 +16,12 @@ from trello_webhooks.settings import (
 )
 
 
+class TrelloClientMock(object):
+    def fetch_json(self, url, http_method, post_args):
+        if http_method == "OK_CALL":
+            return {'id': 1111, 'active': True}
+
+
 
 class WebhookModelTests(TestCase):
 
@@ -219,3 +225,12 @@ class WebhookModelTests(TestCase):
         self.assertEqual(event.event_payload, payload)
         # other CallbackEvent properties are tested in CallbackEvent tests
 
+    def test_trello_sync_ok(self):
+        w = Webhook(trello_model_id=999,
+                    auth_token="TOKEN").save(sync=False)
+        self.assertEqual(w.is_active, None)
+
+        w._trello_sync(verb="OK_CALL", trello_client=TrelloClientMock())
+
+        self.assertEqual(w.is_active, True)
+        self.assertEqual(w.trello_id, 1111)
