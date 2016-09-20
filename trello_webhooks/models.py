@@ -314,28 +314,9 @@ class CallbackEvent(models.Model):
 
     @property
     def action_data(self):
-        """Returns the 'data' node from the payload.
+        """Returns the 'data' node from the payload."""
+        return self.event_payload.get('action', {}).get('data')
 
-        Adds extra 'content_type' field if an attachment is
-        present.
-        """
-        data = self.event_payload.get('action', {}).get('data')
-
-        if not data:
-            return data
-
-        url = data.get('attachment', {}).get('url')
-
-        #----------------------------
-        # No URL, then no attachment
-        #----------------------------
-        if not url:
-            return data
-
-        content_type = self.resolve_content_type(url)
-
-        data['attachment']['content_type'] = content_type
-        return data
 
     @property
     def member(self):

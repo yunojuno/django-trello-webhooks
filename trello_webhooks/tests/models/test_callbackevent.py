@@ -50,6 +50,7 @@ class CallbackEventModelTest(TestCase):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
         ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce.update_content_type()
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
@@ -67,6 +68,7 @@ class CallbackEventModelTest(TestCase):
         #⨪-------------------------------
         data = change_extension(data, 'png')
         ce.event_payload = data
+        ce.update_content_type()
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
@@ -84,6 +86,7 @@ class CallbackEventModelTest(TestCase):
         #⨪-------------------------------
         data = change_extension(data, 'py')
         ce.event_payload = data
+        ce.update_content_type()
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
@@ -100,6 +103,7 @@ class CallbackEventModelTest(TestCase):
         #⨪-------------------------------
         data = change_extension(data, 'NO-IDEA-OF-WHAT-THIS-IS')
         ce.event_payload = data
+        ce.update_content_type()
         self.assertIn('attachment', ce.action_data)
         the_file = ce.action_data['attachment']['url']
         content_type = ce.resolve_content_type(the_file)
