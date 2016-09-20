@@ -3,15 +3,15 @@ import json
 import logging
 import mimetypes
 
-from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils import timezone
+from django.core.urlresolvers import reverse
 from django.template.base import TemplateDoesNotExist
 from django.template.loader import render_to_string
-from django.utils import timezone
 
 from jsonfield import JSONField
-import trello
 
+import trello
 from trello_webhooks import settings
 from trello_webhooks import signals
 
@@ -264,14 +264,39 @@ class CallbackEvent(models.Model):
             (self.id, self.webhook_id, self.event_type)
         )
 
+
+    def has_attachment(self):
+        """Returns True if the payload has an attachment."""
+        return len(self.event_payload.get('action', {})
+                                     .get('data', {})
+                                     .get('attachment', {})) > 0
+
+    def update_content_type(self, content_type):
+        self.event_payload['action']\
+                            ['data']\
+                            ['attachment']\
+                            ['content_type'] = content_type
+
+
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+
+        if self.has_attachment():
+            payload = self.event_payload
+            url = payload['action']['data']['attachment'].get('url')
+            if url:
+                content_type = self.resolve_content_type(url)
+                self.update_content_type(content_type)
+
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
     def resolve_content_type(self, url):
         """Returns the mime type of the resource in the URL."""
+        if not isinstance(url, basestring):
+            return None
+
         mime_type, _ = mimetypes.guess_type(url)
         return mime_type
 

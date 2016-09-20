@@ -19,8 +19,19 @@ class CallbackEventModelTest(TestCase):
     def test_default_properties(self):
         pass
 
-    def test_save(self):
-        pass
+    def test_save_attachment_with_image(self):
+        ce = CallbackEvent.objects.create(
+            webhook_id=111111111,
+            event_payload=get_sample_data('addAttachmentToCard', 'text')
+        )
+        #----------------------------
+        # Refresh from DB.
+        #----------------------------
+        ce = CallbackEvent.objects.get(pk=ce.pk)
+
+        self.assertIn('content_type', ce.event_payload['action']['data']['attachment'])
+        self.assertEqual(ce.event_payload['action']['data']['attachment']['content_type'],
+                         'image/jpeg')
 
     def test_action_data(self):
         ce = CallbackEvent()
