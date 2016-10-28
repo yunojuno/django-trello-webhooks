@@ -271,43 +271,38 @@ class CallbackEvent(models.Model):
 
     @property
     def action_data(self):
-        """Returns the 'data' node from the payload."""
+        """Return action.data node."""
         return self.event_payload.get('action', {}).get('data')
 
     @property
     def attachment(self):
-        """Returns the 'attachment' node from the event_payload."""
+        """Return action.data.attachment node."""
         return self.action_data.get('attachment') if self.action_data else None
 
     @property
-    def member(self):
-        """Returns 'memberCreator' JSON extracted from event_payload."""
-        return self.event_payload.get('action', {}).get('memberCreator')
-
-    @property
     def board(self):
-        """Returns 'board' JSON extracted from event_payload."""
+        """Return action.data.board node."""
         return self.action_data.get('board') if self.action_data else None
 
     @property
-    def list(self):
-        """Returns 'list' JSON extracted from event_payload."""
-        return self.action_data.get('list') if self.action_data else None
+    def board_name(self):
+        """Return action.data.board.name node."""
+        return self.board.get('name') if self.board else None
 
     @property
     def card(self):
-        """Returns 'card' JSON extracted from event_payload."""
+        """Return action.data.card node."""
         return self.action_data.get('card') if self.action_data else None
 
     @property
-    def member_name(self):
-        """Return member name if it exists (used in admin)."""
-        return self.member.get('fullName') if self.member else None
+    def card_name(self):
+        """Return action.data.card.name node (used in admin)."""
+        return self.card.get('name') if self.card else None
 
     @property
-    def board_name(self):
-        """Return board name if it exists (used in admin)."""
-        return self.board.get('name') if self.board else None
+    def list(self):
+        """Return action.data.list node."""
+        return self.action_data.get('list') if self.action_data else None
 
     @property
     def list_name(self):
@@ -315,9 +310,14 @@ class CallbackEvent(models.Model):
         return self.list.get('name') if self.list else None
 
     @property
-    def card_name(self):
-        """Return card name if it exists (used in admin)."""
-        return self.card.get('name') if self.card else None
+    def member(self):
+        """Return action.memberCreator node."""
+        return self.event_payload.get('action', {}).get('memberCreator')
+
+    @property
+    def member_name(self):
+        """Return action.data.memberCreator.fullName node (used in admin)."""
+        return self.member.get('fullName') if self.member else None
 
     @property
     def template(self):
