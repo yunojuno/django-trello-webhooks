@@ -14,6 +14,8 @@ import trello
 from trello_webhooks import settings
 from trello_webhooks import signals
 
+from trello_webhooks.utils import get_mimetype
+
 logger = logging.getLogger(__name__)
 
 
@@ -264,8 +266,9 @@ class CallbackEvent(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        """Update timestamp"""
+        """Pre_save processing."""
         self.timestamp = timezone.now()
+        self.set_attachment_type()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
@@ -278,6 +281,21 @@ class CallbackEvent(models.Model):
     def attachment(self):
         """Return action.data.attachment node."""
         return self.action_data.get('attachment') if self.action_data else None
+
+    @property
+    def attachment_type(self):
+        """Return action.data.attachment.mimeType node."""
+        return self.attachment.get('mimeType') if self.attachment else None
+
+    def set_attachment_type(self):
+        """Set action.data.attachment.mimeType node, if not present."""
+        if self.attachment and not self.attachment_type:
+            attachment_url = self.attachment.get('url', None)
+            if attachment_url:
+                mime_type = get_mimetype(attachment_url)
+                self.attachment['mimeType'] = mime_type
+            else:
+                logger.warning(u'Callback %s has attachment, but no url.')
 
     @property
     def board(self):
