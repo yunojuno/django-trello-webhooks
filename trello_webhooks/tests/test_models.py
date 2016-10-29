@@ -5,6 +5,7 @@ import mock
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.template.loader import render_to_string
 
 import trello
 
@@ -256,11 +257,60 @@ class WebhookModelTests(TestCase):
 
 class CallbackEventModelTest(TestCase):
 
-    def test_default_properties(self):
-        pass
+    def _create_stateful_callback_event(self):
+        wh = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=wh)
+        return ce
 
-    def test_save(self):
-        pass
+    def test_default_properties(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.event_type, u'')
+        self.assertIsNone(ce.timestamp)
+        self.assertIsNone(ce.id)
+        self.assertEquals(ce.event_payload, {})
+
+    @mock.patch('trello_webhooks.models.CallbackEvent.set_attachment_type')
+    @mock.patch('trello_webhooks.models.timezone.now')
+    def test_save(self, timezone_mock, attachment_mock):
+        datetime_saved = datetime.datetime(2016, 10, 29)
+        timezone_mock.return_value = datetime_saved
+
+        ce = self._create_stateful_callback_event()
+        self.assertEqual(ce.timestamp, None)
+        self.assertFalse(attachment_mock.called)
+
+        ce.save()
+        self.assertEqual(ce.timestamp, datetime_saved)
+        self.assertTrue(attachment_mock.called)
+
+    def test_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.attachment, ce.action_data['attachment'])
+
+    def test_set_attachment_type(self):
+        ce = self._create_stateful_callback_event()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        ce.save()
+        self.assertEqual(ce.attachment_type, ('image/jpeg', None))
+
+    def test_template(self):
+        ce = CallbackEvent()
+        ce.event_type = 'addAttachmentToCard'
+        self.assertEqual(
+            ce.template,
+            'trello_webhooks/{}.html'.format(ce.event_type)
+        )
+
+    def test_render(self):
+        ce = CallbackEvent()
+        ce.event_type = 'addAttachmentToCard'
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        rendered_template = ce.render()
+        self.assertEqual(
+            rendered_template,
+            render_to_string(ce.template, ce.event_payload)
+        )
 
     def test_action_data(self):
         ce = CallbackEvent()
