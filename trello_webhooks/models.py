@@ -267,10 +267,13 @@ class CallbackEvent(models.Model):
 
     def save(self, *args, **kwargs):
         """Pre_save processing."""
-        self.timestamp = timezone.now()
-        self.set_attachment_type()
+        self.pre_save_processing()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def pre_save_processing(self):
+        self.timestamp = timezone.now()
+        self.set_attachment_type()
 
     @property
     def action_data(self):
