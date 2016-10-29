@@ -1,6 +1,7 @@
 import logging
 
 from django.core.management.base import BaseCommand
+
 from trello_webhooks.models import CallbackEvent
 
 
