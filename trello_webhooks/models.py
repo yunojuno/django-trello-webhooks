@@ -13,7 +13,6 @@ import trello
 
 from trello_webhooks import settings
 from trello_webhooks import signals
-
 from trello_webhooks.utils import get_mimetype
 
 logger = logging.getLogger(__name__)
