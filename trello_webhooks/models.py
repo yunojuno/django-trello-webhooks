@@ -13,6 +13,7 @@ import trello
 
 from trello_webhooks import settings
 from trello_webhooks import signals
+from trello_webhooks.utils import get_mimetype
 
 logger = logging.getLogger(__name__)
 
@@ -264,45 +265,64 @@ class CallbackEvent(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        """Update timestamp"""
-        self.timestamp = timezone.now()
+        """Pre_save processing."""
+        self.pre_save_processing()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
+    def pre_save_processing(self):
+        self.timestamp = timezone.now()
+        self.set_attachment_type()
+
     @property
     def action_data(self):
-        """Returns the 'data' node from the payload."""
+        """Return action.data node."""
         return self.event_payload.get('action', {}).get('data')
 
     @property
-    def member(self):
-        """Returns 'memberCreator' JSON extracted from event_payload."""
-        return self.event_payload.get('action', {}).get('memberCreator')
+    def attachment(self):
+        """Return action.data.attachment node."""
+        return self.action_data.get('attachment') if self.action_data else None
+
+    @property
+    def attachment_type(self):
+        """Return action.data.attachment.mimeType node."""
+        return self.attachment.get('mimeType') if self.attachment else None
+
+    def set_attachment_type(self):
+        """Set action.data.attachment.mimeType node, if not present."""
+        if self.attachment and not self.attachment_type:
+            attachment_url = self.attachment.get('url', None)
+            if attachment_url:
+                mime_type = get_mimetype(attachment_url)
+                self.attachment['mimeType'] = mime_type
+            else:
+                logger.warning(u'Callback %s has attachment, but no url.')
 
     @property
     def board(self):
-        """Returns 'board' JSON extracted from event_payload."""
+        """Return action.data.board node."""
         return self.action_data.get('board') if self.action_data else None
 
     @property
-    def list(self):
-        """Returns 'list' JSON extracted from event_payload."""
-        return self.action_data.get('list') if self.action_data else None
+    def board_name(self):
+        """Return action.data.board.name node."""
+        return self.board.get('name') if self.board else None
 
     @property
     def card(self):
-        """Returns 'card' JSON extracted from event_payload."""
+        """Return action.data.card node."""
         return self.action_data.get('card') if self.action_data else None
 
     @property
-    def member_name(self):
-        """Return member name if it exists (used in admin)."""
-        return self.member.get('fullName') if self.member else None
+    def card_name(self):
+        """Return action.data.card.name node (used in admin)."""
+        return self.card.get('name') if self.card else None
 
     @property
-    def board_name(self):
-        """Return board name if it exists (used in admin)."""
-        return self.board.get('name') if self.board else None
+    def list(self):
+        """Return action.data.list node."""
+        return self.action_data.get('list') if self.action_data else None
 
     @property
     def list_name(self):
@@ -310,9 +330,14 @@ class CallbackEvent(models.Model):
         return self.list.get('name') if self.list else None
 
     @property
-    def card_name(self):
-        """Return card name if it exists (used in admin)."""
-        return self.card.get('name') if self.card else None
+    def member(self):
+        """Return action.memberCreator node."""
+        return self.event_payload.get('action', {}).get('memberCreator')
+
+    @property
+    def member_name(self):
+        """Return action.data.memberCreator.fullName node (used in admin)."""
+        return self.member.get('fullName') if self.member else None
 
     @property
     def template(self):

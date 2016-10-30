@@ -12,7 +12,8 @@ def send_to_hipchat(
     room=settings.HIPCHAT_ROOM_ID,
     sender="Trello",
     color="yellow",
-    notify=False):
+    notify=False
+):
     """
     Send a message to HipChat.
 
@@ -26,4 +27,4 @@ def send_to_hipchat(
         'room_id': room,
         'message': message
     }
-    return requests.post(HIPCHAT_API_URL, data=payload).status_code
+    return requests.post(HIPCHAT_API_URL, data=payload)
