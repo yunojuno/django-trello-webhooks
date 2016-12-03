@@ -7,6 +7,10 @@ from trello_webhooks.templatetags.trello_webhook_tags import (
     trello_updates
 )
 
+from trello_webhooks.templatetags.app_filters import (
+    attachment_name_or_image
+)
+
 
 class TemplateTagTests(TestCase):
 
@@ -28,3 +32,16 @@ class TemplateTagTests(TestCase):
             trello_updates(new, old),
             {'pos': (1, None)}
         )
+
+    def test_attachment_name_or_image_is_image(self):
+        self.assertEqual(attachment_name_or_image(MockCallbackEvent('image/jpeg')), "<img src='attachmentUrl'/>")
+
+    def test_attachment_name_or_image_is_name(self):
+        self.assertEqual(attachment_name_or_image(MockCallbackEvent('text/plain')), "attachmentName")
+
+class MockCallbackEvent(object):
+    attachment_url = 'attachmentUrl'
+    attachment_name = 'attachmentName'
+
+    def __init__(self, attachment_content_type):
+        self.attachment_content_type = attachment_content_type

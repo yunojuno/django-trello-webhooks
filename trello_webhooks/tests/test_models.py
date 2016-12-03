@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
+import re
 import mock
+import responses
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -253,6 +255,14 @@ class WebhookModelTests(TestCase):
         self.assertEqual(event.event_payload, payload)
         # other CallbackEvent properties are tested in CallbackEvent tests
 
+    @responses.activate
+    def test_add_callback_add_attachment(self):
+        responses.add(responses.GET, re.compile(r'.*trello.*'),
+                        content_type='image/jpeg')
+        hook = Webhook().save(sync=False)
+        payload = get_sample_data('addAttachmentTocard', 'json')
+        event = hook.add_callback(json.dumps(payload))
+        self.assertEqual(event.action_data['attachment']['contentType'], 'image/jpeg')
 
 class CallbackEventModelTest(TestCase):
 
@@ -315,3 +325,25 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_attachment_content_type(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.attachment_content_type, None)
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.attachment_content_type, None)
+        ce.attachment_content_type = 'testContentType'
+        self.assertEqual(ce.attachment_content_type, 'testContentType')
+        self.assertEqual(ce.attachment_content_type, ce.event_payload['action']['data']['attachment']['contentType']) 
+
+    def test_attachment_name(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.attachment_name, None)
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.attachment_name, ce.event_payload['action']['data']['attachment']['name'])
+
+    def test_attachment_url(self):
+        ce = CallbackEvent()
+        self.assertEqual(ce.attachment_url, None)
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertEqual(ce.attachment_url, ce.event_payload['action']['data']['attachment']['url'])
+
