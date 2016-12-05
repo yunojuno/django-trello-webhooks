@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import requests 
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -211,6 +212,7 @@ class Webhook(models.Model):
             return self._create_remote()
 
     def add_callback(self, body_text):
+
         """Add a new CallbackEvent instance and fire signal.
 
         This is called from the callback view, with the JSON body. It
@@ -224,8 +226,11 @@ class Webhook(models.Model):
         event = CallbackEvent(
             webhook=self,
             event_type=action,
-            event_payload=body_text
-        ).save()
+            event_payload=body_text,
+        )
+        if event.event_type == 'addAttachmentToCard':
+            event.attachment_content_type = event.discover_attachment_content_type()
+        event.save() 
         self.touch()
         signals.callback_received.send(sender=self.__class__, event=event)
         return event
@@ -269,8 +274,13 @@ class CallbackEvent(models.Model):
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
+    def discover_attachment_content_type(self):        
+        attachmentResponse = requests.get(self.attachment_url)
+        ret = attachmentResponse.headers.get('Content-Type')
+        return ret
+
     @property
-    def action_data(self):
+    def action_data(self):        
         """Returns the 'data' node from the payload."""
         return self.event_payload.get('action', {}).get('data')
 
@@ -288,6 +298,25 @@ class CallbackEvent(models.Model):
     def list(self):
         """Returns 'list' JSON extracted from event_payload."""
         return self.action_data.get('list') if self.action_data else None
+
+    @property 
+    def attachment_name(self):
+        return self.action_data.get('attachment', {}).get('name') if self.action_data else None
+
+    @property
+    def attachment_url(self):
+        return self.action_data.get('attachment', {}).get('url') if self.action_data else None
+
+    @property
+    def attachment_content_type(self):
+        return self.action_data.get('attachment', {}).get('contentType') if self.action_data else None
+
+    @attachment_content_type.setter
+    def attachment_content_type(self, value):
+        if self.action_data:
+            attachmentData = self.action_data.get('attachment')
+            if attachmentData:
+                attachmentData['contentType'] = value
 
     @property
     def card(self):

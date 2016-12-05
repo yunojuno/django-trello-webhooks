@@ -1,0 +1,77 @@
+{
+  "action": {
+    "type": "addAttachmentToCard",
+    "idMemberCreator": "4e707bf73f6f17ae36001ddc",
+    "memberCreator": {
+      "username": "gareththackeray",
+      "fullName": "Gareth Thackeray",
+      "initials": "GT",
+      "id": "4e707bf73f6f17ae36001ddc",
+      "avatarHash": "ede8ab8d0472c2a375ff1d81f05c3c2b"
+    },
+    "date": "2016-11-25T13:01:18.909Z",
+    "data": {
+      "board": {
+        "id": "4e83079b0511eee01acd8a44",
+        "name": "Admin stuff",
+        "shortLink": "UEHPiQie"
+      },
+      "card": {
+        "idShort": 2,
+        "id": "4e8b7e6edb5d489302c9dc0e",
+        "name": "insurance",
+        "shortLink": "zmCrjWA5"
+      },
+      "attachment": {
+        "name": "puppet1.jpg",
+        "url": "https://trello-attachments.s3.amazonaws.com/4e83079b0511eee01acd8a44/4e8b7e6edb5d489302c9dc0e/a47905dd309ffc072c1857f373893f3b/puppet1.jpg",
+        "previewUrl": "https://trello-attachments.s3.amazonaws.com/4e8b7e6edb5d489302c9dc0e/250x250/7202be64a8dafc90b93bc7be18b1180a/puppet1.jpg.png",
+        "previewUrl2x": "https://trello-attachments.s3.amazonaws.com/4e8b7e6edb5d489302c9dc0e/250x250/7202be64a8dafc90b93bc7be18b1180a/puppet1.jpg.png",
+        "id": "5838361ecd82f97a9825ec7e"
+      }
+    },
+    "id": "5838361ecd82f97a9825ec80"
+  },
+  "model": {
+    "descData": null,
+    "labelNames": {
+      "blue": "",
+      "pink": "",
+      "purple": "",
+      "sky": "",
+      "yellow": "",
+      "green": "",
+      "orange": "",
+      "black": "",
+      "red": "",
+      "lime": ""
+    },
+    "name": "Admin stuff",
+    "shortUrl": "https://trello.com/b/UEHPiQie",
+    "idOrganization": "4e83076f2b76fee61a2ea4eb",
+    "pinned": false,
+    "url": "https://trello.com/b/UEHPiQie/admin-stuff",
+    "closed": false,
+    "prefs": {
+      "permissionLevel": "org",
+      "cardCovers": true,
+      "backgroundColor": "#0079BF",
+      "selfJoin": true,
+      "backgroundBrightness": "dark",
+      "comments": "members",
+      "invitations": "members",
+      "canBePrivate": true,
+      "backgroundImage": null,
+      "backgroundTile": false,
+      "background": "blue",
+      "canBeOrg": true,
+      "canInvite": true,
+      "backgroundImageScaled": null,
+      "calendarFeedEnabled": false,
+      "voting": "disabled",
+      "canBePublic": true
+    },
+    "id": "4e83079b0511eee01acd8a44",
+    "desc": ""
+  }
+}
