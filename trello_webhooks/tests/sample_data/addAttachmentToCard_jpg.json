@@ -1,0 +1,78 @@
+{
+    "action": {
+        "data": {
+            "attachment": {
+                "id": "54875c21f0734e1592af4505",
+                "name": "Ball-Brothers-Logo-NEW-300x127.jpg",
+                "previewUrl": "https://trello-attachments.s3.amazonaws.com/54874eeacffda7d35db29f7a/300x127/d88ad7d14956cc6a2e487e59dc1ad75d/Ball-Brothers-Logo-NEW-300x127.jpg",
+                "previewUrl2x": "https://trello-attachments.s3.amazonaws.com/54874eeacffda7d35db29f7a/300x127/d88ad7d14956cc6a2e487e59dc1ad75d/Ball-Brothers-Logo-NEW-300x127.jpg",
+                "url": "https://trello-attachments.s3.amazonaws.com/54874eeacffda7d35db29f7a/300x127/d88ad7d14956cc6a2e487e59dc1ad75d/Ball-Brothers-Logo-NEW-300x127.jpg"
+            },
+            "board": {
+                "id": "54874d58464f79e03c6fbccd",
+                "name": "new",
+                "shortLink": "d7ABa4ga"
+            },
+            "card": {
+                "id": "54874eeacffda7d35db29f7a",
+                "idShort": 3,
+                "name": "s5rthsr5",
+                "shortLink": "eCoyfrel"
+            }
+        },
+        "date": "2014-12-09T20:31:30.550Z",
+        "id": "54875c22f0734e1592af450a",
+        "idMemberCreator": "5199e7cd1b5b528f6e01473b",
+        "memberCreator": {
+            "avatarHash": "c69d0761cd553b107d049d48d45d075b",
+            "fullName": "Marcel Kornblum",
+            "id": "5199e7cd1b5b528f6e01473b",
+            "initials": "MK",
+            "username": "marcelkornblum"
+        },
+        "type": "addAttachmentToCard"
+    },
+    "model": {
+        "closed": false,
+        "desc": "",
+        "descData": null,
+        "id": "54874d58464f79e03c6fbccd",
+        "idOrganization": null,
+        "labelNames": {
+            "black": "",
+            "blue": "",
+            "green": "",
+            "lime": "",
+            "orange": "",
+            "pink": "",
+            "purple": "",
+            "red": "",
+            "sky": "",
+            "yellow": ""
+        },
+        "name": "new",
+        "pinned": false,
+        "prefs": {
+            "background": "blue",
+            "backgroundBrightness": "unknown",
+            "backgroundColor": "#0079BF",
+            "backgroundImage": null,
+            "backgroundImageScaled": null,
+            "backgroundTile": false,
+            "calendarFeedEnabled": false,
+            "canBeOrg": true,
+            "canBePrivate": true,
+            "canBePublic": true,
+            "canInvite": true,
+            "cardAging": "regular",
+            "cardCovers": true,
+            "comments": "members",
+            "invitations": "members",
+            "permissionLevel": "private",
+            "selfJoin": false,
+            "voting": "disabled"
+        },
+        "shortUrl": "https://trello.com/b/d7ABa4ga",
+        "url": "https://trello.com/b/d7ABa4ga/new"
+    }
+}
