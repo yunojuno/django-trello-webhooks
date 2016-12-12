@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import urllib
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -266,7 +267,19 @@ class CallbackEvent(models.Model):
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+
+        # Add attachment MIME type
+        if self.event_type == 'addAttachmentToCard':
+            self._add_attachment_type()
+
         super(CallbackEvent, self).save(*args, **kwargs)
+        return self
+
+    def _add_attachment_type(self):
+        """Adds "main" type to attachment"""
+        url = self.action_data['attachment']['url']
+        self.action_data['attachment']['mainType'] = urllib.urlopen(url).info().maintype
+
         return self
 
     @property
