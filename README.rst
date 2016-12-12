@@ -229,6 +229,12 @@ be rejected if they 'smell bad'. Specifically, given that this is an app that is
 pushing data over the wire, and therefore hard to debug - lots of logging, and
 lots of comments. Seriously. Lots.
 
+.. NOTE::
+
+  libmagic is required for file detection steps performed when we detect the
+  content type of attachments. On OSX this can be installed with brew, ubuntu
+  seems to have it pre-installed.
+
 Licence
 -------
 
