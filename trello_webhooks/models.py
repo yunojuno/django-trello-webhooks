@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import requests
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -264,10 +265,23 @@ class CallbackEvent(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        """Update timestamp"""
+        """Update timestamp and resolve attachment content type."""
         self.timestamp = timezone.now()
+        self._resolve_attachment_content_type()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def _resolve_attachment_content_type(self):
+        """If the event is of type addAttachmentToCard; resolve the content type
+        of the attachment and store it in the payload.
+        """
+        if self.event_type == "addAttachmentToCard":
+            url = self.action_data['attachment']['url']
+            # Determine the content type.
+            content_type = requests.head(url).headers.get('content-type')
+            # Save content type if header exists and is not an empty string.
+            if content_type:
+                self.action_data['attachment']['contentType'] = content_type
 
     @property
     def action_data(self):

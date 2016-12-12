@@ -1,0 +1,80 @@
+{
+    "action": {
+        "data": {
+            "attachment": {
+                "id": "559fce9095d691ec961d0f10",
+                "name": "test-image.jpg",
+                "previewUrl": "https://example.com/600x450/test-image.jpg",
+                "previewUrl2x": "https://example.com/1200x900/test-image.jpg",
+                "url": "https://example.com/test-image.jpg"
+            },
+            "board": {
+                "id": "520b8735415a078f270016e4",
+                "name": "Test board",
+                "shortLink": "UEqz755C"
+            },
+            "card": {
+                "id": "54c1cfa7924c6f80c5a11b67",
+                "idShort": 93,
+                "name": "Test card",
+                "shortLink": "0GalAadr"
+            }
+        },
+        "date": "2015-07-10T13:54:29.511Z",
+        "id": "559fce9595d691ec961d0f1a",
+        "idMemberCreator": "4e7050f006cf27a48b003033",
+        "memberCreator": {
+            "avatarHash": "c84fa446768c093456fd344aaa33ee52",
+            "fullName": "Neil Lyons",
+            "id": "4e7050f006cf27a48b003033",
+            "initials": "NL",
+            "username": "nwjlyons"
+        },
+        "type": "addAttachmentToCard"
+    },
+    "model": {
+        "badges": {
+            "attachments": 1,
+            "checkItems": 0,
+            "checkItemsChecked": 0,
+            "comments": 0,
+            "description": false,
+            "due": null,
+            "fogbugz": "",
+            "subscribed": false,
+            "viewingMemberVoted": false,
+            "votes": 0
+        },
+        "checkItemStates": [],
+        "closed": false,
+        "dateLastActivity": "2015-07-10T13:54:29.512Z",
+        "desc": "",
+        "descData": null,
+        "due": null,
+        "email": "nwjlyons+4e7050f006cf27a48b003033+54c1cfa7924c6f80c5a11b67+d149a508a39fb6636acf766c5caf1cd9eb6a384d@boards.trello.com",
+        "id": "54c1cfa7924c6f80c5a11b67",
+        "idAttachmentCover": "559fce9095d691ec961d0f10",
+        "idBoard": "520b8735415a078f270016e4",
+        "idChecklists": [],
+        "idLabels": [
+            "545c911f74d650d5679828c3"
+        ],
+        "idList": "523599b34fb637d65b000014",
+        "idMembers": [],
+        "idShort": 93,
+        "labels": [
+            {
+                "color": "yellow",
+                "id": "545c911f74d650d5679828c3",
+                "idBoard": "520b8735415a078f270016e4",
+                "name": "Business",
+                "uses": 1
+            }
+        ],
+        "manualCoverAttachment": false,
+        "name": "Test card",
+        "pos": 327679,
+        "shortUrl": "https://trello.com/c/0GalAadr",
+        "url": "https://trello.com/c/0GalAadr/93-test-card"
+    }
+}

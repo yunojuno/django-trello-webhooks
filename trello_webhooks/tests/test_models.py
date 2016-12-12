@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import httpretty
 import json
 import mock
 
@@ -253,7 +254,6 @@ class WebhookModelTests(TestCase):
         self.assertEqual(event.event_payload, payload)
         # other CallbackEvent properties are tested in CallbackEvent tests
 
-
 class CallbackEventModelTest(TestCase):
 
     def test_default_properties(self):
@@ -261,6 +261,20 @@ class CallbackEventModelTest(TestCase):
 
     def test_save(self):
         pass
+
+    @httpretty.activate
+    def test_resolve_attachment_content_type(self):
+        httpretty.register_uri(httpretty.HEAD, 
+            "https://example.com/test-image.jpg", content_type="image/jpeg")
+        ce = CallbackEvent()
+        ce.event_type = "addAttachmentToCard"
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        # Content type shouldn't exist yet.
+        with self.assertRaises(KeyError):
+            ce.event_payload['action']['data']['attachment']['contentType']
+        ce._resolve_attachment_content_type()
+        # Content should now exist
+        self.assertTrue(ce.event_payload['action']['data']['attachment']['contentType'].startswith('image')) # noqa
 
     def test_action_data(self):
         ce = CallbackEvent()
