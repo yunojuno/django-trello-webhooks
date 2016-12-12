@@ -2,6 +2,7 @@
 import datetime
 import json
 import mock
+import responses
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -257,10 +258,17 @@ class WebhookModelTests(TestCase):
 class CallbackEventModelTest(TestCase):
 
     def test_default_properties(self):
-        pass
+        ce = CallbackEvent()
+        self.assertEqual(ce.timestamp, None)
+        self.assertEqual(ce.event_type, '')
+        self.assertEqual(ce.event_payload, {})
 
     def test_save(self):
-        pass
+        w = Webhook().save(sync=False)
+        ce = CallbackEvent(webhook=w)
+        self.assertIsNone(ce.timestamp)
+        ce.save()
+        self.assertIsNotNone(ce.timestamp)
 
     def test_action_data(self):
         ce = CallbackEvent()
@@ -315,3 +323,24 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    @responses.activate
+    def test_attachment_has_mimetype(self):
+        ce = CallbackEvent()
+        ce.event_type = 'addAttachmentToCard'
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertIsNotNone(ce.event_payload['action']['data']['attachment']['mimeType'])  # noqa
+
+        # Remove mimetype from event_payload
+        ce.action_data['attachment'].pop('mimeType')
+        # Mock response
+        responses.add(
+            responses.HEAD,
+            ce.action_data['attachment']['url'],
+            body="", status=200, content_type="image/svg+xml")
+        # Fetch it again
+        ce._fetch_extra_info()
+        # Check it's been set correctly
+        self.assertEqual(
+            ce.action_data['attachment']['mimeType'],
+            "image/svg+xml")
