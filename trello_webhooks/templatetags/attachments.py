@@ -1,3 +1,4 @@
+# Displaying image attachments inline
 # -*- coding: utf-8 -*-
 
 from django import template
