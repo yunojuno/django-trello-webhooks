@@ -2,6 +2,8 @@
 import json
 import logging
 
+from requests import head
+
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.base import TemplateDoesNotExist
@@ -264,10 +266,20 @@ class CallbackEvent(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        """Update timestamp"""
+        """Update timestamp and attachment type"""
         self.timestamp = timezone.now()
+        self._add_attachment_content_type()
+
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
+
+    def _add_attachment_content_type(self):
+        if self.event_type == 'addAttachmentToCard':
+            url = self.action_data['attachment']['url']
+            content_type = head(url).headers['content-type']
+
+            if content_type:
+                self.action_data['attachment']['contentType'] = content_type
 
     @property
     def action_data(self):
