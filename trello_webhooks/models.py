@@ -279,6 +279,7 @@ class CallbackEvent(models.Model):
 
             content_type = head(url).headers.get('content-type')
             if content_type:
+                print "content type = " + str(bool(content_type))
                 self.action_data['attachment']['contentType'] = content_type
 
     @property

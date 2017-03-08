@@ -1,5 +1,5 @@
 # # -*- coding: utf-8 -*-
-# sync webhooks down from Trello
+# update existing attachment-events with contentType
 import logging
 
 from django.core.management.base import BaseCommand

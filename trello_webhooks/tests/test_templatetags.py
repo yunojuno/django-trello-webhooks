@@ -11,7 +11,7 @@ from trello_webhooks.templatetags.trello_webhook_tags import (
 
 class TemplateTagTests(TestCase):
     def setUp(self):
-        self.plain_attachment = {
+        self.attachment_without_type = {
             "name": "name.png",
             "url": "https://test.com/name.png"
         }
@@ -36,38 +36,37 @@ class TemplateTagTests(TestCase):
         )
 
     def test_attachments_no_type(self):
-        # No contentType => name is displayed.
         self.assertEqual(
-            render_attachment(self.plain_attachment),
-            self.plain_attachment['name']
+            render_attachment(self.attachment_without_type),
+            self.attachment_without_type['name']
         )
 
     def test_attachments_video_type(self):
-        # contentType != image => name is displayed.
-        self.plain_attachment['contentType'] = 'video/mp4'
+        self.attachment_without_type.update({'contentType': 'video/mp4'})
+        video_attachment = self.attachment_without_type
 
         self.assertEqual(
-            render_attachment(self.plain_attachment),
-            self.plain_attachment['name']
+            render_attachment(video_attachment),
+            video_attachment['name']
         )
 
     def test_attachments_image_type(self):
-        # contentType==image => image is displayed.
-        self.plain_attachment['contentType'] = 'image/jpeg'
+        self.attachment_without_type.update({'contentType': 'image/jpeg'})
+        image_attachment = self.attachment_without_type
 
         self.assertEqual(
-            render_attachment(self.plain_attachment),
-            '<img src="%s">' % self.plain_attachment['url']
+            render_attachment(image_attachment),
+            '<img src="%s">' % image_attachment ['url']
         )
 
     def test_attachments_previewUrl(self):
-        # if previewUrl exists => it's used
-        self.plain_attachment.update({
+        self.attachment_without_type.update({
             'contentType': 'image/png',
             'previewUrl': 'https://test.com/200x200/name.png'
         })
+        image_attachment = self.attachment_without_type
 
         self.assertEqual(
-            render_attachment(self.plain_attachment),
-            '<img src="%s">' % self.plain_attachment['previewUrl']
+            render_attachment(image_attachment),
+            '<img src="%s">' % image_attachment['previewUrl']
         )
