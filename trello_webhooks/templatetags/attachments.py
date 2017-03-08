@@ -16,5 +16,5 @@ def render_attachment(attachment):
     if is_image(attachment):
         preview_url = attachment.get('previewUrl', attachment['url'])
 
-        return mark_safe('<img src="%s" height=200px>' % preview_url)
-    return '"%s"' % attachment['name']
+        return mark_safe('<img src="%s">' % preview_url)
+    return attachment['name']
