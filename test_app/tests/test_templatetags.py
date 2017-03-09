@@ -32,7 +32,7 @@ class TemplateTagTests(TestCase):
 
         self.assertEqual(
             render_attachment(image_attachment),
-            '<img src="%s">' % image_attachment ['url']
+            '<img src="%s">' % image_attachment['url']
         )
 
     def test_attachments_previewUrl(self):

@@ -2,11 +2,13 @@
 import datetime
 import json
 
-import httpretty as httpretty
+import httpretty
 import mock
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+
+import trello
 
 from trello_webhooks.models import Webhook, CallbackEvent
 from trello_webhooks.settings import (
@@ -318,11 +320,11 @@ class CallbackEventModelTest(TestCase):
 
     @httpretty.activate
     def test_attachment_text_file(self):
-        httpretty.register_uri(httpretty.HEAD, "https://test.com/pretend-image.png",
+        httpretty.register_uri(httpretty.HEAD, "https://test.com/image006.png",
                                content_type="application/octet-stream")
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
-        ce.event_payload = get_sample_data('eventPayloadTextFileAttached', 'text')
+        ce.event_payload = get_sample_data('eventPayloadImageAttached', 'text')
         ce.event_type = ce.event_payload['action']['type']
 
         ce._process_attachment_content_type()

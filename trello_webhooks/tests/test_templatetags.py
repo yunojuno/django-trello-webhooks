@@ -2,7 +2,6 @@
 from django.test import TestCase
 
 from trello_webhooks.settings import TRELLO_API_KEY
-
 from trello_webhooks.templatetags.trello_webhook_tags import (
     trello_api_key,
     trello_updates
@@ -10,6 +9,7 @@ from trello_webhooks.templatetags.trello_webhook_tags import (
 
 
 class TemplateTagTests(TestCase):
+
     def test_trello_api_key(self):
         self.assertEqual(trello_api_key(), TRELLO_API_KEY)
 
