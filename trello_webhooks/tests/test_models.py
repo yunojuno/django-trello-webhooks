@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
+
+import httpretty
 import mock
 
 from django.core.urlresolvers import reverse
@@ -315,3 +317,44 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    @httpretty.activate
+    def test_attachment_text_file(self):
+        httpretty.register_uri(httpretty.HEAD, "https://test.com/image006.png",
+                               content_type="application/octet-stream")
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        ce.event_payload = get_sample_data('eventPayloadImageAttached', 'text')
+        ce.event_type = ce.event_payload['action']['type']
+
+        ce._process_attachment_content_type()
+
+        self.assertEqual("application/octet-stream", ce.action_data['attachment']['contentType'])
+
+    @httpretty.activate
+    def test_attachment_image(self):
+        httpretty.register_uri(httpretty.HEAD, "https://test.com/image006.png",
+                               content_type="image/png")
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        ce.event_payload = get_sample_data('eventPayloadImageAttached', 'text')
+        ce.event_type = ce.event_payload['action']['type']
+
+        ce._process_attachment_content_type()
+
+        self.assertEqual("image/png", ce.action_data['attachment']['contentType'])
+
+    @httpretty.activate
+    def test_attachment_no_content_type(self):
+        httpretty.register_uri(httpretty.HEAD, "https://test.com/image006.png",
+                               forcing_headers={
+                                   "header": "value"
+                               })
+        ce = CallbackEvent()
+        self.assertEqual(ce.action_data, None)
+        ce.event_payload = get_sample_data('eventPayloadImageAttached', 'text')
+        ce.event_type = ce.event_payload['action']['type']
+
+        ce._process_attachment_content_type()
+        with self.assertRaises(KeyError):
+            ce.action_data['attachment']['contentType']
