@@ -13,8 +13,7 @@ class Command(BaseCommand):
     help = "Update CallBackEvents with contentType in attachments' payload"
 
     def handle(self, *args, **options):
-        """Updates the image field on addAttachmentToCard events
-        """
+        """Updates the image field on addAttachmentToCard events."""
         events_with_attachments = CallbackEvent.objects.filter(
             event_type="addAttachmentToCard")
 

@@ -13,7 +13,7 @@ def is_image(attachment):
 
 @register.filter()
 def render_attachment(attachment):
-    """Return inline image if attachment is an image, otherwise - its name"""
+    """Return inline image if attachment is an image, otherwise - its name."""
     if is_image(attachment):
         preview_url = attachment.get('previewUrl', attachment['url'])
 
