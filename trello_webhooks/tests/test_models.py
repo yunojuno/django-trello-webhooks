@@ -315,3 +315,19 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_attachment_content_type_with_csv(self):
+        ce = CallbackEvent(event_type='addAttachmentToCard')
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'text')
+        self.assertTrue('text/csv' in ce.attachment_content_type)
+
+    def test_attachment_content_type_with_image(self):
+        ce = CallbackEvent(event_type='addAttachmentToCard')
+        ce.event_payload = get_sample_data('addAttachmentToCardImage', 'text')
+        self.assertEqual(ce.attachment_content_type, "image/jpeg")
+
+    def test_attachment_content_type_with_image(self):
+        ce = CallbackEvent(webhook_id=0, event_type='addAttachmentToCard')
+        ce.event_payload = get_sample_data('addAttachmentToCardImage', 'text')
+        ce.save()
+        self.assertEqual(ce.action_data['attachment']['content_type'], "image/jpeg")
