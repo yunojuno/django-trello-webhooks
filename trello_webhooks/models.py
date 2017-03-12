@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import urllib
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -266,6 +267,7 @@ class CallbackEvent(models.Model):
     def save(self, *args, **kwargs):
         """Update timestamp"""
         self.timestamp = timezone.now()
+        self._set_attachment_content_type()
         super(CallbackEvent, self).save(*args, **kwargs)
         return self
 
@@ -318,6 +320,19 @@ class CallbackEvent(models.Model):
     def template(self):
         """Return full path to render template, based on event_type."""
         return 'trello_webhooks/%s.html' % self.event_type
+
+    @property
+    def attachment_content_type(self):
+        """Returns the type of attachment on this event"""
+        if self.event_type == 'addAttachmentToCard':
+            attachment_url = self.action_data.get('attachment')['url']
+            attachment_content_type = urllib.urlopen(attachment_url).info().getheader('Content-Type')
+            return attachment_content_type
+
+    def _set_attachment_content_type(self):
+        """Sets attachment content type of events on save if event has any attachments"""
+        if self.attachment_content_type:
+            self.action_data['attachment']['content_type'] = self.attachment_content_type
 
     def render(self):
         """Render the event using an HTML template.

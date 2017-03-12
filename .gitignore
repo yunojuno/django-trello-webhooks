@@ -53,3 +53,7 @@ coverage.xml
 docs/_build/
 
 test_app/static
+coverage_reports
+
+# MacOS related
+.DS_Store
