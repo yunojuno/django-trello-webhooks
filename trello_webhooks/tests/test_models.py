@@ -264,6 +264,15 @@ class WebhookModelTests(TestCase):
         self.assertEqual(event.event_payload, payload)
         # other CallbackEvent properties are tested in CallbackEvent tests
 
+    @mock.patch('trello_webhooks.models.CallbackEvent.get_attachment_type',
+                return_value='text/plain')
+    def test_add_callback_saves_attachment_type(self, mock_get_attachment_type):
+        hook = Webhook().save(sync=False)
+        payload = get_sample_data('addAttachmentToCard', 'json')
+        event = hook.add_callback(json.dumps(payload))
+        self.assertEqual(
+            event.event_payload['action']['data']['attachment']['attachmentType'], 'text/plain')
+
 
 class CallbackEventModelTest(TestCase):
 
