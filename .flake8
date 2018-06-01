@@ -1,0 +1,5 @@
+[flake8]
+exclude =
+    *migrations*
+    .tox/
+max-line-length = 100
