@@ -1,0 +1,46 @@
+{
+    "action":
+        {
+            "id": "5b0e661039040319ab1d2418",
+            "idMemberCreator": "5b0a8af4fdabbc0e589f4494",
+            "data": {
+                "board": {
+                    "shortLink": "6ZNqzWHc",
+                    "name": "my_test_board",
+                    "id": "5b0a8b38d3bd63f8365d9751"
+                },
+                "list": {
+                    "name": "To Do",
+                    "id": "5b0a8b38d3bd63f8365d9752"
+                },
+                "card": {
+                    "shortLink": "isnnzRAc",
+                    "idShort": 4,
+                    "name": "test_card_2",
+                    "id": "5b0e65e5d2ece050ee899e66"
+                },
+                "attachment": {
+                    "url": "https://trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac398/avatar-of-a-person-with-dark-short-hair.png",
+                    "name": "avatar-of-a-person-with-dark-short-hair.png",
+                    "id": "5b0e661039040319ab1d2416",
+                    "previewUrl": "https://trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac398/avatar-of-a-person-with-dark-short-hair.png",
+                    "previewUrl2x": "https://trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac398/avatar-of-a-person-with-dark-short-hair.png"
+                }
+            },
+            "type": "addAttachmentToCard",
+            "date": "2018-05-30T08:51:28.687Z",
+            "limits": {},
+            "memberCreator": {
+                "id": "5b0a8af4fdabbc0e589f4494",
+                "avatarHash": null,
+                "avatarUrl": null,
+                "fullName": "Tomasz Kluczkowski",
+                "initials": "TK",
+                "username": "tomaszkluczkowski"
+            }
+        },
+    "checklists": [],
+    "customFieldItems": [],
+    "members": [],
+    "pluginData": []
+}
