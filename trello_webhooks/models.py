@@ -227,7 +227,11 @@ class Webhook(models.Model):
             webhook=self,
             event_type=action,
             event_payload=body_text
-        ).save()
+        )
+        if payload.get('action').get('data').get('attachment', None):
+            attachment_type = event.get_attachment_type()
+            event.event_payload['action']['data']['attachment']['attachmentType'] = attachment_type
+        event.save()
         self.touch()
         signals.callback_received.send(sender=self.__class__, event=event)
         return event
