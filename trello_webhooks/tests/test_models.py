@@ -347,3 +347,36 @@ class CallbackEventModelTest(TestCase):
         ce = CallbackEvent()
         ce.event_payload = get_sample_data('addAttachmentToCardImageType', 'json')
         self.assertEqual(ce.get_attachment_type(), 'image/png')
+
+    def test_render_of_AddAttachmentToCard_with_image_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCardImageType', 'json')
+        ce.event_payload['action']['data']['attachment']['attachmentType'] = u'image/png'
+        ce.event_type = 'addAttachmentToCard'
+        # Render_to_string replaces all Django logic template tags {% if %} etc with \n characters.
+        # So they have to be in the test output.
+        rendered_to_string = (
+            u"""\n\n<strong>TK</strong> added attachment "<strong><a href="https://"""
+            u"""trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/"""
+            u"""5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac398/avatar-of-a-person"""
+            u"""-with-dark-short-hair.png"><img src="https://trello-attachments.s3.amazonaws.com/"""
+            u"""5b0a8b38d3bd63f8365d9751/5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac"""
+            u"""398/avatar-of-a-person-with-dark-short-hair.png" alt="Attachment"></a>"""
+            u"""</strong>"\n\n<br><em>my_test_board / To Do / <a href="https://trello.com/c/"""
+            u"""isnnzRAc">test_card_2</a></em>""")
+        self.assertEqual(ce.render(), rendered_to_string)
+
+    def test_render_of_AddAttachmentToCard_with_text_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'json')
+        ce.event_type = 'addAttachmentToCard'
+        ce.event_payload['action']['data']['attachment']['attachmentType'] = u'plain/text'
+        # Render_to_string replaces all Django logic template tags {% if %} etc with \n characters.
+        # So they have to be in the test output.
+        rendered_to_string = (
+            u"""\n\n<strong>TK</strong> added attachment "<strong><a href="https://"""
+            u"""trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/5b0d1ac18ec1210b"""
+            u"""806d837c/ab4f8943755d458c13660452e24e1051/LICENSE">LICENSE</a></strong>"\n\n<br>"""
+            u"""<em>my_test_board / To Do / <a href="https://trello.com/c/vx3BSWX2">test_card</a>"""
+            u"""</em>""")
+        self.assertEqual(ce.render(), rendered_to_string)
