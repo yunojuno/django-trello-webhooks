@@ -7,12 +7,12 @@ HIPCHAT_API_URL = 'https://api.hipchat.com/v1/rooms/message'
 
 
 def send_to_hipchat(
-    message,
-    token=settings.HIPCHAT_API_TOKEN,
-    room=settings.HIPCHAT_ROOM_ID,
-    sender="Trello",
-    color="yellow",
-    notify=False):
+        message,
+        token=settings.HIPCHAT_API_TOKEN,
+        room=settings.HIPCHAT_ROOM_ID,
+        sender="Trello",
+        color="yellow",
+        notify=False):
     """
     Send a message to HipChat.
 
