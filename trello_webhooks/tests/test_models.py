@@ -282,6 +282,44 @@ class CallbackEventModelTest(TestCase):
     def test_save(self):
         pass
 
+    def test_unicode_with_unsaved_event(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        self.assertEqual(ce.__unicode__(),
+                         """CallbackEvent: 'addAttachmentToCard' raised by webhook 1.""")
+
+    def test_unicode_with_saved_event(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        ce.save()
+        self.assertEqual(ce.__unicode__(),
+                         """CallbackEvent 1: 'addAttachmentToCard' raised by webhook 1.""")
+
+    def test_str(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        self.assertEqual(ce.__str__(),
+                         """CallbackEvent: 'addAttachmentToCard' raised by webhook 1.""")
+
+    def test_repr(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        ce.save()
+        self.assertEqual(ce.__repr__(),
+                         """<CallbackEvent id=1, webhook=1, event_type='addAttachmentToCard'>""")
+
     def test_action_data(self):
         ce = CallbackEvent()
         self.assertEqual(ce.action_data, None)
