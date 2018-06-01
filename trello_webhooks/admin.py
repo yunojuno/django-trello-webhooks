@@ -200,5 +200,6 @@ class WebhookAdmin(admin.ModelAdmin):
     sync.short_description = "Sync with Trello"
     actions = [sync]
 
+
 admin.site.register(CallbackEvent, CallbackEventAdmin)
 admin.site.register(Webhook, WebhookAdmin)
