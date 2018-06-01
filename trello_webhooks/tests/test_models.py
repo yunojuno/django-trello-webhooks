@@ -39,6 +39,17 @@ def mock_trello_sync(webhook, verb):
     return webhook
 
 
+class MockResponse():
+    def iter_content(self, chunk_size):
+        return [1, 2]
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def __enter__(self):
+        return self
+
+
 def mock_trello_sync_x(webhook, verb):
     """Fake version of the Webhook._trello_sync method that mimics failure.
 
@@ -315,3 +326,15 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_get_attachment_type_no_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('commentCard', 'json')
+        self.assertEqual(ce.get_attachment_type(), None)
+
+    @mock.patch('trello_webhooks.models.requests.get', return_value=MockResponse())
+    @mock.patch('trello_webhooks.models.magic.from_buffer', return_value='image/png')
+    def test_get_attachment_type_with_image_attachment(self, mock_from_buffer, mock_response):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCardImageType', 'json')
+        self.assertEqual(ce.get_attachment_type(), 'image/png')
