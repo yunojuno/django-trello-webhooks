@@ -81,6 +81,43 @@ class CallbackEventAdmin(admin.ModelAdmin):
     def has_template(self, instance):
         return instance.render() is not None
 
+    def add_attachment_type(self, request, queryset):
+        """Add missing attachment types to selected CallbackEvent objects.
+
+        For all CallbackEvent objects which were created in the past and contain attachment in data
+        but are missing the attachment type we want to add it to the event_payload.
+
+        Args:
+            request: http request object, passed in from the admin view
+            queryset: a django queryset containing CallbackEvent objects selected in the admin view
+
+        """
+        count = queryset.count()
+        if count == 0:
+            return
+        queryset_filtered = queryset.filter(event_type='addAttachmentToCard')
+
+        count = 0
+        for event in queryset_filtered:
+            try:
+                attachment_type = (
+                    event.event_payload['action']['data']['attachment']['attachmentType'])
+            except KeyError:
+                attachment_type = None
+            if not attachment_type:
+                count += 1
+                attachment_type = event.get_attachment_type()
+                event.event_payload['action']['data']['attachment'][
+                    'attachmentType'] = attachment_type
+                event.save(update_fields=['event_payload'])
+        logger.info(
+            u"%s added attachment type to %i CallbackEvents from the admin site.",
+            request.user, count
+        )
+
+    add_attachment_type.short_description = "Add missing attachment types"
+    actions = [add_attachment_type]
+
 
 class CallbackEventInline(admin.StackedInline):
     model = CallbackEvent
@@ -162,6 +199,7 @@ class WebhookAdmin(admin.ModelAdmin):
 
     sync.short_description = "Sync with Trello"
     actions = [sync]
+
 
 admin.site.register(CallbackEvent, CallbackEventAdmin)
 admin.site.register(Webhook, WebhookAdmin)

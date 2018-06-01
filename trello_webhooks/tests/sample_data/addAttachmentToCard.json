@@ -1,0 +1,44 @@
+{
+    "action":
+        {
+            "id": "5b0d1ad9cdb0072bef60289a",
+            "idMemberCreator": "5b0a8af4fdabbc0e589f4494",
+            "data": {
+                "board": {
+                    "shortLink": "6ZNqzWHc",
+                    "name": "my_test_board",
+                    "id": "5b0a8b38d3bd63f8365d9751"
+                },
+                "list": {
+                    "name": "To Do",
+                    "id": "5b0a8b38d3bd63f8365d9752"
+                },
+                "card": {
+                    "shortLink": "vx3BSWX2",
+                    "idShort": 3,
+                    "name": "test_card",
+                    "id": "5b0d1ac18ec1210b806d837c"
+                },
+                "attachment": {
+                    "url": "https://trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/5b0d1ac18ec1210b806d837c/ab4f8943755d458c13660452e24e1051/LICENSE",
+                    "name": "LICENSE",
+                    "id": "5b0d1ad9cdb0072bef602899"
+                }
+            },
+            "type": "addAttachmentToCard",
+            "date": "2018-05-29T09:18:17.776Z",
+            "limits": {},
+            "memberCreator": {
+                "id": "5b0a8af4fdabbc0e589f4494",
+                "avatarHash": null,
+                "avatarUrl": null,
+                "fullName": "Tomasz Kluczkowski",
+                "initials": "TK",
+                "username": "tomaszkluczkowski"
+            }
+        },
+    "checklists": [],
+    "customFieldItems": [],
+    "members": [],
+    "pluginData": []
+}

@@ -53,3 +53,5 @@ coverage.xml
 docs/_build/
 
 test_app/static
+.idea/
+coverage_reports/

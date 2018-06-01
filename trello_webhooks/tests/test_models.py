@@ -6,8 +6,6 @@ import mock
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-import trello
-
 from trello_webhooks.models import Webhook, CallbackEvent
 from trello_webhooks.settings import (
     TRELLO_API_KEY,
@@ -37,6 +35,17 @@ def mock_trello_sync(webhook, verb):
         webhook.trello_id = ''
         webhook.is_active = False
     return webhook
+
+
+class MockResponse():
+    def iter_content(self, chunk_size):
+        return [1, 2]
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def __enter__(self):
+        return self
 
 
 def mock_trello_sync_x(webhook, verb):
@@ -253,6 +262,15 @@ class WebhookModelTests(TestCase):
         self.assertEqual(event.event_payload, payload)
         # other CallbackEvent properties are tested in CallbackEvent tests
 
+    @mock.patch('trello_webhooks.models.CallbackEvent.get_attachment_type',
+                return_value='text/plain')
+    def test_add_callback_saves_attachment_type(self, mock_get_attachment_type):
+        hook = Webhook().save(sync=False)
+        payload = get_sample_data('addAttachmentToCard', 'json')
+        event = hook.add_callback(json.dumps(payload))
+        self.assertEqual(
+            event.event_payload['action']['data']['attachment']['attachmentType'], 'text/plain')
+
 
 class CallbackEventModelTest(TestCase):
 
@@ -261,6 +279,44 @@ class CallbackEventModelTest(TestCase):
 
     def test_save(self):
         pass
+
+    def test_unicode_with_unsaved_event(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        self.assertEqual(ce.__unicode__(),
+                         """CallbackEvent: 'addAttachmentToCard' raised by webhook 1.""")
+
+    def test_unicode_with_saved_event(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        ce.save()
+        self.assertEqual(ce.__unicode__(),
+                         """CallbackEvent 1: 'addAttachmentToCard' raised by webhook 1.""")
+
+    def test_str(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        self.assertEqual(ce.__str__(),
+                         """CallbackEvent: 'addAttachmentToCard' raised by webhook 1.""")
+
+    def test_repr(self):
+        hook = Webhook().save(sync=False)
+        ce = CallbackEvent(
+            webhook=hook,
+            event_type='addAttachmentToCard'
+        )
+        ce.save()
+        self.assertEqual(ce.__repr__(),
+                         """<CallbackEvent id=1, webhook=1, event_type='addAttachmentToCard'>""")
 
     def test_action_data(self):
         ce = CallbackEvent()
@@ -315,3 +371,48 @@ class CallbackEventModelTest(TestCase):
         self.assertEqual(ce.card_name, None)
         ce.event_payload = get_sample_data('createCard', 'text')
         self.assertEqual(ce.card_name, ce.event_payload['action']['data']['card']['name'])  # noqa
+
+    def test_get_attachment_type_no_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('commentCard', 'json')
+        self.assertEqual(ce.get_attachment_type(), None)
+
+    @mock.patch('trello_webhooks.models.requests.get', return_value=MockResponse())
+    @mock.patch('trello_webhooks.models.magic.from_buffer', return_value='image/png')
+    def test_get_attachment_type_with_image_attachment(self, mock_from_buffer, mock_response):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCardImageType', 'json')
+        self.assertEqual(ce.get_attachment_type(), 'image/png')
+
+    def test_render_of_AddAttachmentToCard_with_image_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCardImageType', 'json')
+        ce.event_payload['action']['data']['attachment']['attachmentType'] = u'image/png'
+        ce.event_type = 'addAttachmentToCard'
+        # Render_to_string replaces all Django logic template tags {% if %} etc with \n characters.
+        # So they have to be in the test output.
+        rendered_to_string = (
+            u"""\n\n<strong>TK</strong> added attachment "<strong><a href="https://"""
+            u"""trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/"""
+            u"""5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac398/avatar-of-a-person"""
+            u"""-with-dark-short-hair.png"><img src="https://trello-attachments.s3.amazonaws.com/"""
+            u"""5b0a8b38d3bd63f8365d9751/5b0e65e5d2ece050ee899e66/bfefa10c250d785a1a78c6f0e53ac"""
+            u"""398/avatar-of-a-person-with-dark-short-hair.png" alt="Attachment"></a>"""
+            u"""</strong>"\n\n<br><em>my_test_board / To Do / <a href="https://trello.com/c/"""
+            u"""isnnzRAc">test_card_2</a></em>""")
+        self.assertEqual(ce.render(), rendered_to_string)
+
+    def test_render_of_AddAttachmentToCard_with_text_attachment(self):
+        ce = CallbackEvent()
+        ce.event_payload = get_sample_data('addAttachmentToCard', 'json')
+        ce.event_type = 'addAttachmentToCard'
+        ce.event_payload['action']['data']['attachment']['attachmentType'] = u'plain/text'
+        # Render_to_string replaces all Django logic template tags {% if %} etc with \n characters.
+        # So they have to be in the test output.
+        rendered_to_string = (
+            u"""\n\n<strong>TK</strong> added attachment "<strong><a href="https://"""
+            u"""trello-attachments.s3.amazonaws.com/5b0a8b38d3bd63f8365d9751/5b0d1ac18ec1210b"""
+            u"""806d837c/ab4f8943755d458c13660452e24e1051/LICENSE">LICENSE</a></strong>"\n\n<br>"""
+            u"""<em>my_test_board / To Do / <a href="https://trello.com/c/vx3BSWX2">test_card</a>"""
+            u"""</em>""")
+        self.assertEqual(ce.render(), rendered_to_string)

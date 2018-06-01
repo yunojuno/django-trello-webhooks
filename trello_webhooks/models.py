@@ -1,6 +1,8 @@
 # # -*- coding: utf-8 -*-
 import json
 import logging
+import requests
+import magic
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -225,7 +227,11 @@ class Webhook(models.Model):
             webhook=self,
             event_type=action,
             event_payload=body_text
-        ).save()
+        )
+        if payload.get('action').get('data').get('attachment', None):
+            attachment_type = event.get_attachment_type()
+            event.event_payload['action']['data']['attachment']['attachmentType'] = attachment_type
+        event.save()
         self.touch()
         signals.callback_received.send(sender=self.__class__, event=event)
         return event
@@ -347,3 +353,20 @@ class CallbackEvent(models.Model):
                 self.template
             )
             return None
+
+    def get_attachment_type(self):
+        """Returns attachment's file type.
+
+        Returns mime type of the attached file or none if attachment not present.
+
+        """
+        mime = None
+        attachment_url = self.action_data.get('attachment', {}).get('url')
+        if attachment_url is None:
+            return None
+        with requests.get(attachment_url, stream=True) as response:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    mime = magic.from_buffer(chunk, mime=True)
+                    break
+        return mime
