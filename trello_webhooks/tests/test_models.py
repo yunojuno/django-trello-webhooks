@@ -6,8 +6,6 @@ import mock
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-import trello
-
 from trello_webhooks.models import Webhook, CallbackEvent
 from trello_webhooks.settings import (
     TRELLO_API_KEY,
